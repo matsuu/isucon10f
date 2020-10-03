@@ -7,7 +7,7 @@
 sudo rm -f /var/log/envoy/access.log
 sudo systemctl restart envoy
 sudo rm -f /var/log/varnish/varnishncsa.log
-sudo systemctl reload varnishncsa
+#sudo systemctl reload varnishncsa
 
 #sudo rm -f /var/log/mysql/error.log
 #sudo rm -f /var/log/mysql/mysql-slow.log
