@@ -1,0 +1,1973 @@
+Reading from STDIN ...
+
+# 25.8s user time, 470ms system time, 29.66M rss, 36.75M vsz
+# Current date: Sat Oct  3 07:31:31 2020
+# Hostname: team276-001
+# Files: STDIN
+# Overall: 240.55k total, 60 unique, 1.66k QPS, 1.12x concurrency ________
+# Time range: 2020-10-03T07:29:03 to 2020-10-03T07:31:28
+# Attribute          total     min     max     avg     95%  stddev  median
+# ============     ======= ======= ======= ======= ======= ======= =======
+# Exec time           162s     1us   132ms   675us     2ms     3ms   125us
+# Lock time            31s       0    46ms   130us   194us   783us    42us
+# Rows sent          2.67M       0   1.01k   11.66    5.75   78.54    0.99
+# Rows examine       7.01M       0   2.03k   30.54   24.84  169.25    0.99
+# Query size        27.39M       6   2.35k  119.39  441.81  302.80   62.76
+
+# Profile
+# Rank Query ID                           Response time Calls R/Call V/M  
+# ==== ================================== ============= ===== ====== =====
+#    1 0x94DAA9B853A4194B236A188CFDA83F98 77.2013 47.5%  4088 0.0189  0.01 SELECT teams benchmark_jobs contestants
+#    2 0xF95462C8E3E2FEF72AB7B096FBEDA022 13.9340  8.6%  3708 0.0038  0.01 UPDATE benchmark_jobs
+#    3 0x6CDF0F958A105B514036B56CB7B5F15F 13.3178  8.2% 61601 0.0002  0.00 SELECT contestants
+#    4 0x2ABC4FED164E43995860DC28DCB5BAE4 12.7289  7.8%  4088 0.0031  0.01 SELECT benchmark_jobs
+#    5 0xBE833A38A821BED3A6A440FB19899FC5 10.5749  6.5% 57899 0.0002  0.00 SELECT teams
+#    6 0xA0B645FAC805F824A18DBE6A05ED8451  7.5272  4.6% 15388 0.0005  0.01 SELECT benchmark_jobs
+#    7 0x38EE1F6E4C02D7173F445309CF543EF4  4.8236  3.0% 18084 0.0003  0.00 SELECT contestants
+#    8 0x79C041E3F00D30C804E5F9D05F9C7425  2.9944  1.8%  3958 0.0008  0.01 SELECT benchmark_jobs
+#    9 0x37B56D8F93E12D26C3984A089C0C44E6  2.2441  1.4%  8046 0.0003  0.00 SELECT contest_config
+#   10 0xA494778D1679D6A166F12FBF42CC3832  1.9863  1.2%  6117 0.0003  0.01 INSERT notifications
+#   11 0x952DECED7FBC7455D2414029381918C8  1.5172  0.9%  6117 0.0002  0.00 SELECT push_subscriptions
+#   12 0xEC39E11F54352B6F28D32F7CC2975DEC  1.5119  0.9%  1006 0.0015  0.01 INSERT benchmark_jobs
+#   13 0x03A710824806E84E1C7A8D9BAAB2BE40  1.4310  0.9%  1005 0.0014  0.01 UPDATE benchmark_jobs
+#   14 0x1E2C15A7E66819C278D8529D11AC3A58  1.3231  0.8%  2007 0.0007  0.00 SELECT benchmark_jobs
+#   15 0xF022F4BFEA4083D3266FAE1C6EF191AF  1.2867  0.8%  1002 0.0013  0.01 UPDATE benchmark_jobs
+#   16 0x71453D4A94362E3B7AE4C84B1E851232  1.2308  0.8%  6117 0.0002  0.00 SELECT notifications
+#   17 0xFFFCA4D67EA0A788813031B8BBC3B329  1.1520  0.7%  8812 0.0001  0.00 COMMIT
+#   18 0x3EEF0DF270D43C1AB97F0399B4B387CE  0.8630  0.5%  1319 0.0007  0.00 SELECT clarifications
+#   19 0x90BC753FBC96AA5265EE4B05D2F9FFE9  0.6758  0.4%  1007 0.0007  0.01 SELECT benchmark_jobs
+#   20 0x9E2DA589A20EC24C34E11DDE0FBF5564  0.5665  0.3% 12690 0.0000  0.00 START
+#   21 0xFFF66E9B3D962FA319C8068B5C1997CD  0.4497  0.3%  3878 0.0001  0.00 ROLLBACK
+#   22 0xF5FA13673A6C6D66D01D7163DE579554  0.3946  0.2%   979 0.0004  0.00 SELECT benchmark_jobs
+#   23 0xC4D7476F8DE7A06DA258514E5EEDFFF1  0.2805  0.2%    64 0.0044  0.00 LOCK teams contestants
+#   24 0x426CC7F7874CAD705DEA0E3BE88FDF2F  0.2462  0.2%   190 0.0013  0.01 INSERT contestants
+#   25 0xA2D9A64A7C56978B287C8F23D9B09520  0.2391  0.1%  1006 0.0002  0.00 SELECT benchmark_jobs
+#   26 0x64BFBB4E5E232330C45DE4F1F8F55169  0.2347  0.1%  2740 0.0001  0.00 SET
+#   27 0x83E41B7D9BC62EA64EA1F756605A504E  0.2258  0.1%  1259 0.0002  0.00 SELECT contestants
+#   28 0x70217C8AE1F9D7D1115E5F97FF3756D2  0.2014  0.1%    62 0.0032  0.01 SELECT contestants
+#   29 0xD6BFB68F388B6F86029C8BF7E8C1A666  0.1374  0.1%  1005 0.0001  0.00 SELECT contest_config
+#   30 0xA047D8262C0F167581112215C5F5358E  0.1218  0.1%   540 0.0002  0.00 SELECT clarifications
+#   31 0x4245C6218DD22F8F300B9171740DA57B  0.0974  0.1%   270 0.0004  0.00 UPDATE clarifications
+#   32 0x29984F7D9044C4EDEECB1E537D24A5A5  0.0883  0.1%   180 0.0005  0.00 INSERT push_subscriptions
+#   33 0xB921858A91C031A6B0FB188807F45AC9  0.0749  0.0%   124 0.0006  0.00 SELECT teams
+#   34 0xE9B99D8692DAB924357D3B2E2ED46296  0.0677  0.0%   314 0.0002  0.00 SELECT clarifications
+#   35 0xE4A622C7CB76D7813C077CFF74CF08D7  0.0632  0.0%   270 0.0002  0.00 SELECT clarifications
+#   36 0xEC21D2EFA0C730EA735CE0A957011765  0.0587  0.0%   314 0.0002  0.00 INSERT clarifications
+#   37 0x1AC0ADD73E8A313C91A6D9758EBE99FD  0.0503  0.0%   270 0.0002  0.00 SELECT teams
+#   38 0xF4EB41A16552B395124BC37ED27B4312  0.0475  0.0%   124 0.0004  0.00 SELECT contestants
+#   39 0x00504F846C7528842184BFA0B4DC6FD7  0.0409  0.0%   122 0.0003  0.00 UPDATE contestants
+#   40 0x4914EA69D8C778868EC9F489719D1BAE  0.0407  0.0%   123 0.0003  0.00 SELECT contestants
+#   41 0x5CEB9066DCD49DF03A2BD844DECD6E06  0.0394  0.0%     2 0.0197  0.00 TRUNCATE
+#   42 0x4CB7472C964B064FE0F2F50AFCEE0C88  0.0391  0.0%     2 0.0195  0.00 TRUNCATE
+#   43 0x577B225755F9F47B35AAC71503957920  0.0338  0.0%     1 0.0338  0.00 FLUSH
+#   44 0xD688E3F5705F25C79C81F0CEC4F48789  0.0281  0.0%     2 0.0141  0.00 TRUNCATE
+#   45 0xE0E82CE9009A26634DAF25CC9F9E0A86  0.0269  0.0%     2 0.0135  0.00 TRUNCATE
+#   46 0x5681DBE1347042630CA11B57E214A27F  0.0240  0.0%     2 0.0120  0.00 TRUNCATE
+#   47 0xC501DDF8F78DE21723E3E3AAC552EBC7  0.0211  0.0%    64 0.0003  0.00 UNLOCK
+#   48 0x0F511D4D2D818C012CF4FABD19E740E8  0.0204  0.0%     2 0.0102  0.00 TRUNCATE
+#   49 0xB87DF3E0987D6140B7A9EFF9F4E1ED65  0.0203  0.0%     2 0.0102  0.00 TRUNCATE
+#   50 0x33A94728B6CC55367A5E91DF3C1CB8B5  0.0169  0.0%    61 0.0003  0.00 SELECT clarifications
+#   51 0x3AC4EF5F42E26C39AFC9AFBD91C10B4E  0.0141  0.0%    61 0.0002  0.00 UPDATE contestants
+#   52 0x809609CEDB543CF57368C4E2B6034116  0.0115  0.0%    61 0.0002  0.00 UPDATE teams
+#   53 0x529807A9C62C8075717ABFE38F7443C0  0.0092  0.0%    64 0.0001  0.00 SELECT teams
+#   54 0x383A14B4F80A64F6A3FF09B0C4E39718  0.0089  0.0%    61 0.0001  0.00 INSERT teams
+#   55 0xEDBC971AEC392917AA353644DE4C4CB4  0.0077  0.0%  2182 0.0000  0.00 ADMIN QUIT
+#   56 0x302FA8A15FF6E0C22A871A700527E4B2  0.0040  0.0%    61 0.0001  0.00 SELECT
+#   57 0x3126FC5549A7A647065487BFAC0A3FFF  0.0039  0.0%    13 0.0003  0.00 SELECT contestants
+#   58 0xFD5FFBB6D15F5070E3F209E180347583  0.0015  0.0%     7 0.0002  0.00 SELECT contestants
+#   59 0xD77143EEF4FAF7BC52F5526CA3C1BE46  0.0015  0.0%     2 0.0007  0.00 INSERT contest_config
+#   60 0x12E13A81E7AF0AC5356CCE4D47E0280B  0.0012  0.0%     2 0.0006  0.00 INSERT contestants
+
+# Query 1: 29.20 QPS, 0.55x concurrency, ID 0x94DAA9B853A4194B236A188CFDA83F98 at byte 74512398
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:08 to 2020-10-03T07:31:28
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          1    4088
+# Exec time     47     77s     2ms   132ms    19ms    48ms    16ms    14ms
+# Lock time      9      3s   177us    45ms   698us     2ms     2ms   403us
+# Rows sent      8 239.47k       1      60   59.99   59.77    0.92   59.77
+# Rows examine  23   1.62M       5     420  414.36  400.73   31.67  400.73
+# Query size    34   9.39M   2.35k   2.35k   2.35k   2.27k       0   2.27k
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms  ###################################
+#  10ms  ################################################################
+# 100ms  #
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'teams'\G
+#    SHOW CREATE TABLE `xsuportal`.`teams`\G
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT
+  `teams`.`id` AS `id`,
+  `teams`.`name` AS `name`,
+  `teams`.`leader_id` AS `leader_id`,
+  `teams`.`withdrawn` AS `withdrawn`,
+  `team_student_flags`.`student` AS `student`,
+  (`best_score_jobs`.`score_raw` - `best_score_jobs`.`score_deduction`) AS `best_score`,
+  `best_score_jobs`.`started_at` AS `best_score_started_at`,
+  `best_score_jobs`.`finished_at` AS `best_score_marked_at`,
+  (`latest_score_jobs`.`score_raw` - `latest_score_jobs`.`score_deduction`) AS `latest_score`,
+  `latest_score_jobs`.`started_at` AS `latest_score_started_at`,
+  `latest_score_jobs`.`finished_at` AS `latest_score_marked_at`,
+  `latest_score_job_ids`.`finish_count` AS `finish_count`
+FROM
+  `teams`
+  -- latest scores
+  LEFT JOIN (
+    SELECT
+      MAX(`id`) AS `id`,
+      `team_id`,
+      COUNT(*) AS `finish_count`
+    FROM
+      `benchmark_jobs`
+    WHERE
+      `finished_at` IS NOT NULL
+      -- score freeze
+      AND (`team_id` = 59 OR (`team_id` != 59 AND (0 = TRUE OR `finished_at` < '2020-10-03 07:30:10')))
+    GROUP BY
+      `team_id`
+  ) `latest_score_job_ids` ON `latest_score_job_ids`.`team_id` = `teams`.`id`
+  LEFT JOIN `benchmark_jobs` `latest_score_jobs` ON `latest_score_job_ids`.`id` = `latest_score_jobs`.`id`
+  -- best scores
+  LEFT JOIN (
+    SELECT
+      MAX(`j`.`id`) AS `id`,
+      `j`.`team_id` AS `team_id`
+    FROM
+      (
+        SELECT
+          `team_id`,
+          MAX(`score_raw` - `score_deduction`) AS `score`
+        FROM
+          `benchmark_jobs`
+        WHERE
+          `finished_at` IS NOT NULL
+          -- score freeze
+          AND (`team_id` = 59 OR (`team_id` != 59 AND (0 = TRUE OR `finished_at` < '2020-10-03 07:30:10')))
+        GROUP BY
+          `team_id`
+      ) `best_scores`
+      LEFT JOIN `benchmark_jobs` `j` ON (`j`.`score_raw` - `j`.`score_deduction`) = `best_scores`.`score`
+        AND `j`.`team_id` = `best_scores`.`team_id`
+    GROUP BY
+      `j`.`team_id`
+  ) `best_score_job_ids` ON `best_score_job_ids`.`team_id` = `teams`.`id`
+  LEFT JOIN `benchmark_jobs` `best_score_jobs` ON `best_score_jobs`.`id` = `best_score_job_ids`.`id`
+  -- check student teams
+  LEFT JOIN (
+    SELECT
+      `team_id`,
+      (SUM(`student`) = COUNT(*)) AS `student`
+    FROM
+      `contestants`
+    GROUP BY
+      `contestants`.`team_id`
+  ) `team_student_flags` ON `team_student_flags`.`team_id` = `teams`.`id`
+ORDER BY
+  `latest_score` DESC,
+  `latest_score_marked_at` ASC\G
+
+# Query 2: 75.67 QPS, 0.28x concurrency, ID 0xF95462C8E3E2FEF72AB7B096FBEDA022 at byte 42137807
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          1    3708
+# Exec time      8     14s    75us    47ms     4ms    14ms     5ms     2ms
+# Lock time     31     10s    24us    46ms     3ms    10ms     4ms     1ms
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0   3.62k       1       1       1       1       0       1
+# Query size     1 437.83k     119     122  120.91  118.34       0  118.34
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  #
+# 100us  ###########################################
+#   1ms  ################################################################
+#  10ms  ###########
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+UPDATE `benchmark_jobs` SET `status` = 1, `handle` = 'lJuhqsf8BbZhrYmcryBTUQ==' WHERE `id` = 603 AND `status` = 0 LIMIT 1\G
+# Converted for EXPLAIN
+# EXPLAIN /*!50100 PARTITIONS*/
+select  `status` = 1, `handle` = 'lJuhqsf8BbZhrYmcryBTUQ==' from `benchmark_jobs` where  `id` = 603 AND `status` = 0  LIMIT 1 \G
+
+# Query 3: 449.64 QPS, 0.10x concurrency, ID 0x6CDF0F958A105B514036B56CB7B5F15F at byte 58136857
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:31:27
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count         25   61601
+# Exec time      8     13s    45us    29ms   216us   366us   771us   113us
+# Lock time     18      6s    12us    26ms    92us   125us   595us    42us
+# Rows sent      2  60.16k       0       1    1.00    0.99    0.01    0.99
+# Rows examine   0  60.16k       0       1    1.00    0.99    0.01    0.99
+# Query size    13   3.69M      56      63   62.85   62.76    1.12   62.76
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ###############################
+# 100us  ################################################################
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `contestants` WHERE `id` = '6t629anatdRc' LIMIT 1\G
+
+# Query 4: 29.20 QPS, 0.09x concurrency, ID 0x2ABC4FED164E43995860DC28DCB5BAE4 at byte 32055037
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:08 to 2020-10-03T07:31:28
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          1    4088
+# Exec time      7     13s   207us    62ms     3ms    11ms     5ms     1ms
+# Lock time      3      1s    39us    24ms   303us   690us     1ms    93us
+# Rows sent     81   2.19M       0   1.01k  561.03  833.10  254.76  592.07
+# Rows examine  64   4.49M       0   2.03k   1.12k   1.78k  522.55   1.20k
+# Query size     5   1.52M     389     391  390.65  381.65       0  381.65
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ########################
+#   1ms  ################################################################
+#  10ms  #######
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT
+  `team_id` AS `team_id`,
+  (`score_raw` - `score_deduction`) AS `score`,
+  `started_at` AS `started_at`,
+  `finished_at` AS `finished_at`
+FROM
+  `benchmark_jobs`
+WHERE
+  `started_at` IS NOT NULL
+  AND (
+    `finished_at` IS NOT NULL
+    -- score freeze
+    AND (`team_id` = 54 OR (`team_id` != 54 AND (0 = TRUE OR `finished_at` < '2020-10-03 07:30:10')))
+  )
+ORDER BY
+  `finished_at`\G
+
+# Query 5: 422.62 QPS, 0.08x concurrency, ID 0xBE833A38A821BED3A6A440FB19899FC5 at byte 70845733
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:31:27
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count         24   57899
+# Exec time      6     11s    44us    37ms   182us   316us   600us   108us
+# Lock time     13      4s    12us    24ms    72us   113us   384us    38us
+# Rows sent      2  56.35k       0       1    1.00    0.99    0.06    0.99
+# Rows examine   0  56.35k       0       1    1.00    0.99    0.06    0.99
+# Query size     9   2.48M      44      45   44.84   44.60    0.50   44.60
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  #########################################
+# 100us  ################################################################
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'teams'\G
+#    SHOW CREATE TABLE `xsuportal`.`teams`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `teams` WHERE `id` = 1 LIMIT 1\G
+
+# Query 6: 252.26 QPS, 0.12x concurrency, ID 0xA0B645FAC805F824A18DBE6A05ED8451 at byte 42158947
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:20 to 2020-10-03T07:30:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          6   15388
+# Exec time      4      8s    84us    49ms   489us   972us     2ms   204us
+# Lock time      3      1s    17us    40ms    71us   119us   342us    57us
+# Rows sent      0   3.62k       0       1    0.24    0.99    0.42       0
+# Rows examine   4 350.63k       0     595   23.33  174.84   78.31       0
+# Query size     3   1.04M      71      71      71      71       0      71
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  #
+# 100us  ################################################################
+#   1ms  ###
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `benchmark_jobs` WHERE `status` = 0 ORDER BY `id` LIMIT 1\G
+
+# Query 7: 212.75 QPS, 0.06x concurrency, ID 0x38EE1F6E4C02D7173F445309CF543EF4 at byte 17297441
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:30:35
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          7   18084
+# Exec time      2      5s    74us    30ms   266us   490us   651us   159us
+# Lock time      4      1s    13us    14ms    70us   108us   314us    38us
+# Rows sent      1  52.86k       1       3    2.99    2.90    0.11    2.90
+# Rows examine   1 105.72k       2       6    5.99    5.75    0.22    5.75
+# Query size     4   1.20M      69      70   69.83   69.19    0.50   69.19
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ###
+# 100us  ################################################################
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `contestants` WHERE `team_id` = 10 ORDER BY `created_at`\G
+
+# Query 8: 33.83 QPS, 0.03x concurrency, ID 0x79C041E3F00D30C804E5F9D05F9C7425 at byte 8388106
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:31:27
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          1    3958
+# Exec time      1      3s   117us    36ms   756us     3ms     2ms   247us
+# Lock time      1   334ms    17us    15ms    84us   131us   317us    49us
+# Rows sent      1  38.17k       0      32    9.87   18.53    5.15    9.83
+# Rows examine   1  76.34k       0      64   19.75   36.69   10.24   19.46
+# Query size     1 300.87k      77      78   77.84   76.28       0   76.28
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ######
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `benchmark_jobs` WHERE `team_id` = 59 ORDER BY `created_at` DESC\G
+
+# Query 9: 57.47 QPS, 0.02x concurrency, ID 0x37B56D8F93E12D26C3984A089C0C44E6 at byte 61444888
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:08 to 2020-10-03T07:31:28
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          3    8046
+# Exec time      1      2s    67us    41ms   278us   515us   756us   176us
+# Lock time      3      1s    39us    16ms   153us   247us   467us    93us
+# Rows sent      0   7.86k       0       1    1.00    0.99    0.01    0.99
+# Rows examine   0   7.86k       0       1    1.00    0.99    0.01    0.99
+# Query size    12   3.48M     453     453     453     453       0     453
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ##
+# 100us  ################################################################
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contest_config'\G
+#    SHOW CREATE TABLE `xsuportal`.`contest_config`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT *, NOW(6) AS `current_time`, CASE WHEN NOW(6) < `registration_open_at` THEN 'standby' WHEN `registration_open_at` <= NOW(6) AND NOW(6) < `contest_starts_at` THEN 'registration' WHEN `contest_starts_at` <= NOW(6) AND NOW(6) < `contest_ends_at` THEN 'started' WHEN `contest_ends_at` <= NOW(6) THEN 'finished' ELSE 'unknown' END AS `status`, IF(`contest_starts_at` <= NOW(6) AND NOW(6) < `contest_freezes_at`, 1, 0) AS `frozen` FROM `contest_config`\G
+
+# Query 10: 122.34 QPS, 0.04x concurrency, ID 0xA494778D1679D6A166F12FBF42CC3832 at byte 59644990
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:20
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          2    6117
+# Exec time      1      2s    50us    40ms   324us   568us     1ms   144us
+# Lock time      1   543ms    19us    14ms    88us   144us   312us    54us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     3 951.04k     154     163  159.21  158.58    0.91  158.58
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ##########
+# 100us  ################################################################
+#   1ms  ##
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'notifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`notifications`\G
+INSERT INTO `notifications` (`contestant_id`, `encoded_message`, `read`, `created_at`, `updated_at`) VALUES ('nGbUAtUn6dw9', 'GgMIiwY=', FALSE, NOW(6), NOW(6))\G
+
+# Query 11: 122.34 QPS, 0.03x concurrency, ID 0x952DECED7FBC7455D2414029381918C8 at byte 19980380
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:20
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          2    6117
+# Exec time      0      2s    79us    12ms   248us   490us   476us   167us
+# Lock time      1   455ms    13us    10ms    74us   125us   285us    44us
+# Rows sent      0   5.97k       1       1       1       1       0       1
+# Rows examine   0   5.97k       1       1       1       1       0       1
+# Query size     1 435.64k      68      73   72.93   72.65    0.81   72.65
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ###
+# 100us  ################################################################
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'push_subscriptions'\G
+#    SHOW CREATE TABLE `xsuportal`.`push_subscriptions`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `push_subscriptions` WHERE `contestant_id` = 'VeMUczfzjval'\G
+
+# Query 12: 15.72 QPS, 0.02x concurrency, ID 0xEC39E11F54352B6F28D32F7CC2975DEC at byte 8387433
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:15 to 2020-10-03T07:30:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    1006
+# Exec time      0      2s    79us    40ms     2ms     7ms     3ms   214us
+# Lock time      0    74ms    18us     2ms    73us   131us   127us    54us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0 149.16k     151     152  151.83  151.03    0.50  151.03
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ##
+# 100us  ################################################################
+#   1ms  #########################
+#  10ms  ##
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+INSERT INTO `benchmark_jobs` (`team_id`, `target_hostname`, `status`, `updated_at`, `created_at`) VALUES (29, 'xsu-contestant-00029', 0, NOW(6), NOW(6))\G
+
+# Query 13: 20.10 QPS, 0.03x concurrency, ID 0x03A710824806E84E1C7A8D9BAAB2BE40 at byte 24759388
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:20
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    1005
+# Exec time      0      1s    91us    37ms     1ms     8ms     3ms   236us
+# Lock time      0    87ms    27us     3ms    86us   159us   138us    60us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0    1005       1       1       1       1       0       1
+# Query size     0 231.52k     234     237  235.90  234.30    1.05  234.30
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  #
+# 100us  ################################################################
+#   1ms  #############
+#  10ms  ##
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+UPDATE `benchmark_jobs` SET `status` = 2, `score_raw` = NULL, `score_deduction` = NULL, `passed` = FALSE, `reason` = NULL, `started_at` = '2020-10-03 07:29:41.623000', `updated_at` = NOW(6), `finished_at` = NULL WHERE `id` = 402 LIMIT 1\G
+# Converted for EXPLAIN
+# EXPLAIN /*!50100 PARTITIONS*/
+select  `status` = 2, `score_raw` = NULL, `score_deduction` = NULL, `passed` = FALSE, `reason` = NULL, `started_at` = '2020-10-03 07:29:41.623000', `updated_at` = NOW(6), `finished_at` = NULL from `benchmark_jobs` where  `id` = 402  LIMIT 1 \G
+
+# Query 14: 40.14 QPS, 0.03x concurrency, ID 0x1E2C15A7E66819C278D8529D11AC3A58 at byte 7963796
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:20
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    2007
+# Exec time      0      1s    70us    21ms   659us     3ms     2ms   159us
+# Lock time      1   361ms    22us    21ms   180us   185us   972us    57us
+# Rows sent      0   1.96k       1       1       1       1       0       1
+# Rows examine   0   1.96k       1       1       1       1       0       1
+# Query size     0 211.48k     106     109  107.90  107.34    1.50  107.34
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  #####
+# 100us  ################################################################
+#   1ms  #########
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `benchmark_jobs` WHERE `id` = 75 AND `handle` = '7WqkQ2b50NwpFMZKKIVhHA==' LIMIT 1 FOR UPDATE\G
+
+# Query 15: 20.04 QPS, 0.03x concurrency, ID 0xF022F4BFEA4083D3266FAE1C6EF191AF at byte 17189327
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:20
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    1002
+# Exec time      0      1s   106us    31ms     1ms     7ms     3ms   247us
+# Lock time      0    95ms    27us    15ms    95us   152us   450us    63us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0    1002       1       1       1       1       0       1
+# Query size     1 371.25k     350     414  379.40  400.73   22.21  363.48
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ############
+#  10ms  ##
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+UPDATE `benchmark_jobs` SET `status` = 5, `score_raw` = 165054, `score_deduction` = 0, `passed` = 1, `reason` = 'load: verification: 検証に成功しました\nload: checksum: MD5 チェックサムの一致\nload: verification: 検証に成功しました\nload: http: ステータスコードの検証成功', `updated_at` = NOW(6), `finished_at` = '2020-10-03 07:29:37.200000' WHERE `id` = 272 LIMIT 1\G
+# Converted for EXPLAIN
+# EXPLAIN /*!50100 PARTITIONS*/
+select  `status` = 5, `score_raw` = 165054, `score_deduction` = 0, `passed` = 1, `reason` = 'load: verification: 検証に成功しました\nload: checksum: MD5 チェックサムの一致\nload: verification: 検証に成功しました\nload: http: ステータスコードの検証成功', `updated_at` = NOW(6), `finished_at` = '2020-10-03 07:29:37.200000' from `benchmark_jobs` where  `id` = 272  LIMIT 1 \G
+
+# Query 16: 122.34 QPS, 0.02x concurrency, ID 0x71453D4A94362E3B7AE4C84B1E851232 at byte 11198372
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:20
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          2    6117
+# Exec time      0      1s    51us    18ms   201us   316us   673us   113us
+# Lock time      1   401ms    14us    18ms    65us   113us   301us    40us
+# Rows sent      0   5.97k       1       1       1       1       0       1
+# Rows examine   0   5.97k       1       1       1       1       0       1
+# Query size     1 327.47k      52      55   54.82   54.21    0.95   54.21
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ############################
+# 100us  ################################################################
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'notifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`notifications`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `notifications` WHERE `id` = 414 LIMIT 1\G
+
+# Query 17: 62.94 QPS, 0.01x concurrency, ID 0xFFFCA4D67EA0A788813031B8BBC3B329 at byte 46696738
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:08 to 2020-10-03T07:31:28
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          3    8812
+# Exec time      0      1s    17us    24ms   130us   214us   615us    52us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0  51.63k       6       6       6       6       0       6
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ################################################################
+# 100us  ########
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+COMMIT\G
+
+# Query 18: 28.67 QPS, 0.02x concurrency, ID 0x3EEF0DF270D43C1AB97F0399B4B387CE at byte 19913807
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:33 to 2020-10-03T07:30:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    1319
+# Exec time      0   863ms   109us    26ms   654us     1ms     2ms   366us
+# Lock time      0   151ms    19us    21ms   114us   144us   681us    54us
+# Rows sent      0  13.20k       0      20   10.25   18.53    5.41    9.83
+# Rows examine   3 223.02k       0     314  173.14  299.03   78.22  174.84
+# Query size     0 118.32k      91      92   91.85   88.31       0   88.31
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  #####
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'clarifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`clarifications`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `clarifications` WHERE `team_id` = 39 OR `disclosed` = TRUE ORDER BY `id` DESC\G
+
+# Query 19: 15.73 QPS, 0.01x concurrency, ID 0x90BC753FBC96AA5265EE4B05D2F9FFE9 at byte 8395218
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:15 to 2020-10-03T07:30:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    1007
+# Exec time      0   676ms    93us    26ms   671us     2ms     2ms   214us
+# Lock time      0    70ms    22us     2ms    69us   131us    93us    52us
+# Rows sent      0    1007       1       1       1       1       0       1
+# Rows examine   0   8.26k       0      31    8.40   18.53    5.73    7.70
+# Query size     0  91.28k      92      93   92.82   92.72    0.50   92.72
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  #
+# 100us  ################################################################
+#   1ms  ######
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT COUNT(*) AS `cnt` FROM `benchmark_jobs` WHERE `team_id` = 30 AND `finished_at` IS NULL\G
+
+# Query 20: 90.64 QPS, 0.00x concurrency, ID 0x9E2DA589A20EC24C34E11DDE0FBF5564 at byte 9921459
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:08 to 2020-10-03T07:31:28
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          5   12690
+# Exec time      0   567ms     5us    10ms    44us    80us   188us    27us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0 210.67k      17      17      17      17       0      17
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us  #
+#  10us  ################################################################
+# 100us  #
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+START TRANSACTION\G
+
+# Query 21: 57.03 QPS, 0.01x concurrency, ID 0xFFF66E9B3D962FA319C8068B5C1997CD at byte 17079425
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:30:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          1    3878
+# Exec time      0   450ms    15us    11ms   115us   194us   454us    49us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0  30.30k       8       8       8       8       0       8
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ################################################################
+# 100us  #########
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+ROLLBACK\G
+
+# Query 22: 20.40 QPS, 0.01x concurrency, ID 0xF5FA13673A6C6D66D01D7163DE579554 at byte 66333313
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:31 to 2020-10-03T07:30:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     979
+# Exec time      0   395ms    66us    20ms   403us   881us     1ms   144us
+# Lock time      0   123ms    21us    19ms   125us   167us   737us    52us
+# Rows sent      0     979       1       1       1       1       0       1
+# Rows examine   0     979       1       1       1       1       0       1
+# Query size     0  70.48k      71      74   73.72   72.65    0.48   72.65
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ########
+# 100us  ################################################################
+#   1ms  ###
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `benchmark_jobs` WHERE `team_id` = 33 AND `id` = 808 LIMIT 1\G
+
+# Query 23: 8 QPS, 0.04x concurrency, ID 0xC4D7476F8DE7A06DA258514E5EEDFFF1 at byte 581079
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      64
+# Exec time      0   281ms   356us    15ms     4ms    12ms     4ms     4ms
+# Lock time      0   258ms    88us    15ms     4ms    12ms     4ms     3ms
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0   2.88k      46      46      46      46       0      46
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  #################
+#   1ms  ################################################################
+#  10ms  #########
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'teams'\G
+#    SHOW CREATE TABLE `xsuportal`.`teams`\G
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+LOCK TABLES `teams` WRITE, `contestants` WRITE\G
+
+# Query 24: 17.27 QPS, 0.02x concurrency, ID 0x426CC7F7874CAD705DEA0E3BE88FDF2F at byte 930946
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     190
+# Exec time      0   246ms   117us    16ms     1ms     7ms     3ms   204us
+# Lock time      0   199ms    41us    16ms     1ms     6ms     3ms    76us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0  32.27k     169     174  173.92  166.51       0  166.51
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ########
+#  10ms  ###
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+INSERT INTO `contestants` (`id`, `password`, `staff`, `created_at`) VALUES ('MUbMwPIPm0e8', 'db8da0a8b9cf8ae0c61b09764b4ab80f99b81a33c2b2b5dcddd0ed5e69fa534c', FALSE, NOW(6))\G
+
+# Query 25: 15.72 QPS, 0.00x concurrency, ID 0xA2D9A64A7C56978B287C8F23D9B09520 at byte 46359924
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:15 to 2020-10-03T07:30:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    1006
+# Exec time      0   239ms    68us    27ms   237us   348us   925us   144us
+# Lock time      0    88ms    26us     5ms    87us   144us   177us    66us
+# Rows sent      0    1006       1       1       1       1       0       1
+# Rows examine   0    1006       1       1       1       1       0       1
+# Query size     0  75.65k      77      77      77      77       0      77
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  #######
+# 100us  ################################################################
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'benchmark_jobs'\G
+#    SHOW CREATE TABLE `xsuportal`.`benchmark_jobs`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `benchmark_jobs` WHERE `id` = (SELECT LAST_INSERT_ID()) LIMIT 1\G
+
+# Query 26: 31.86 QPS, 0.00x concurrency, ID 0x64BFBB4E5E232330C45DE4F1F8F55169 at byte 52143679
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:08 to 2020-10-03T07:30:34
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          1    2740
+# Exec time      0   235ms    14us     9ms    85us   185us   231us    49us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0  58.87k      22      22      22      22       0      22
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ################################################################
+# 100us  ############
+#   1ms  #
+#  10ms
+# 100ms
+#    1s
+#  10s+
+SET time_zone='+00:00'\G
+
+# Query 27: 25.18 QPS, 0.00x concurrency, ID 0x83E41B7D9BC62EA64EA1F756605A504E at byte 55119958
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:20
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    1259
+# Exec time      0   226ms    72us     3ms   179us   332us   152us   144us
+# Lock time      0    68ms    19us     1ms    54us   108us    58us    40us
+# Rows sent      0   3.69k       3       3       3       3       0       3
+# Rows examine   0   3.69k       3       3       3       3       0       3
+# Query size     0  76.03k      61      62   61.84   59.77       0   59.77
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ######
+# 100us  ################################################################
+#   1ms  #
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT `id`, `team_id` FROM `contestants` WHERE `team_id` = 22\G
+
+# Query 28: 5.64 QPS, 0.02x concurrency, ID 0x70217C8AE1F9D7D1115E5F97FF3756D2 at byte 583951
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.01
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      62
+# Exec time      0   201ms   130us    20ms     3ms    12ms     5ms   287us
+# Lock time      0   180ms    36us    19ms     3ms    12ms     5ms    66us
+# Rows sent      0      64       1       3    1.03    0.99    0.24    0.99
+# Rows examine   0      64       1       3    1.03    0.99    0.24    0.99
+# Query size     0   2.90k      47      48   47.82   46.83       0   46.83
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ##################
+#  10ms  ##############
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `contestants` WHERE `team_id` = 22\G
+
+# Query 29: 20.51 QPS, 0.00x concurrency, ID 0xD6BFB68F388B6F86029C8BF7E8C1A666 at byte 8853692
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:30 to 2020-10-03T07:30:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    1005
+# Exec time      0   137ms    45us    11ms   136us   204us   439us    89us
+# Lock time      0    59ms    15us     7ms    58us    89us   254us    35us
+# Rows sent      0    1005       1       1       1       1       0       1
+# Rows examine   0    1005       1       1       1       1       0       1
+# Query size     0  54.96k      56      56      56      56       0      56
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ################################################################
+# 100us  ############################################
+#   1ms  #
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contest_config'\G
+#    SHOW CREATE TABLE `xsuportal`.`contest_config`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT `contest_starts_at` FROM `contest_config` LIMIT 1\G
+
+# Query 30: 15 QPS, 0.00x concurrency, ID 0xA047D8262C0F167581112215C5F5358E at byte 21169837
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:34 to 2020-10-03T07:30:10
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     540
+# Exec time      0   122ms    49us     5ms   225us   541us   489us   113us
+# Lock time      0    44ms    19us     3ms    81us   144us   255us    40us
+# Rows sent      0     540       1       1       1       1       0       1
+# Rows examine   0     540       1       1       1       1       0       1
+# Query size     0  28.79k      53      55   54.60   54.21       1   54.21
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ###################################
+# 100us  ################################################################
+#   1ms  ###
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'clarifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`clarifications`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `clarifications` WHERE `id` = 55 LIMIT 1\G
+
+# Query 31: 7.50 QPS, 0.00x concurrency, ID 0x4245C6218DD22F8F300B9171740DA57B at byte 29902357
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:34 to 2020-10-03T07:30:10
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     270
+# Exec time      0    97ms    78us     4ms   360us     1ms   606us   194us
+# Lock time      0    30ms    27us     2ms   109us   167us   237us    60us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0     270       1       1       1       1       0       1
+# Query size     0  43.32k     147     190  164.29  183.58   12.91  158.58
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ##
+# 100us  ################################################################
+#   1ms  ####
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'clarifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`clarifications`\G
+UPDATE `clarifications` SET `disclosed` = 0, `answer` = '解答しました', `updated_at` = NOW(6), `answered_at` = NOW(6) WHERE `id` = 121 LIMIT 1\G
+# Converted for EXPLAIN
+# EXPLAIN /*!50100 PARTITIONS*/
+select  `disclosed` = 0, `answer` = '解答しました', `updated_at` = NOW(6), `answered_at` = NOW(6) from `clarifications` where  `id` = 121  LIMIT 1 \G
+
+# Query 32: 180 QPS, 0.09x concurrency, ID 0x29984F7D9044C4EDEECB1E537D24A5A5 at byte 1531178
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:20 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     180
+# Exec time      0    88ms   105us     6ms   490us     3ms   891us   214us
+# Lock time      0    24ms    41us     2ms   132us   301us   201us    73us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0  60.98k     342     347  346.92  346.17    2.11  346.17
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ######
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'push_subscriptions'\G
+#    SHOW CREATE TABLE `xsuportal`.`push_subscriptions`\G
+INSERT INTO `push_subscriptions` (`contestant_id`, `endpoint`, `p256dh`, `auth`, `created_at`, `updated_at`) VALUES ('ypdDr5m4NyHP', 'https://isubench.t.isucon.dev/push/foE_3HZ7myC-Be0-IzVkiaWU0_Wjb0syDKm2JKv20MQ', 'BE0iPLl5KaRxb04m8oEi1MGPsLbEpb1actqq07XpmHtk0FTegNma5dAbKr89gzhWfPMD4XNS39OIdyoAkC0BMO8', 'aBszCaNPS5NZqOA6mo783Q', NOW(6), NOW(6))\G
+
+# Query 33: 15.50 QPS, 0.01x concurrency, ID 0xB921858A91C031A6B0FB188807F45AC9 at byte 328909
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     124
+# Exec time      0    75ms   107us     7ms   604us     2ms     1ms   185us
+# Lock time      0    52ms    42us     7ms   418us     2ms     1ms    69us
+# Rows sent      0     123       0       1    0.99    0.99    0.09    0.99
+# Rows examine   0     123       0       1    0.99    0.99    0.09    0.99
+# Query size     0  23.24k     191     199  191.89  183.58    0.82  183.58
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ######
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'teams'\G
+#    SHOW CREATE TABLE `xsuportal`.`teams`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `teams` WHERE `id` = 1 AND `invite_token` = 'HWrvkpPTtn3pTQxcb2MdAsp5cI9Eq81kXg8rxFJnxYQD4GVUtOdx_0_tSllS58I9O8JJLyQv2vyBUBXEMzLk3Q==' AND `withdrawn` = FALSE LIMIT 1 FOR UPDATE\G
+
+# Query 34: 6.98 QPS, 0.00x concurrency, ID 0xE9B99D8692DAB924357D3B2E2ED46296 at byte 76853663
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:33 to 2020-10-03T07:30:18
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     314
+# Exec time      0    68ms    57us     6ms   215us   348us   529us   119us
+# Lock time      0    31ms    23us     5ms    98us   131us   377us    47us
+# Rows sent      0     314       1       1       1       1       0       1
+# Rows examine   0     314       1       1       1       1       0       1
+# Query size     0  20.85k      68      68      68      68       0      68
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ####################
+# 100us  ################################################################
+#   1ms  #
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'clarifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`clarifications`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `clarifications` WHERE `id` = LAST_INSERT_ID() LIMIT 1\G
+
+# Query 35: 7.50 QPS, 0.00x concurrency, ID 0xE4A622C7CB76D7813C077CFF74CF08D7 at byte 12718340
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:34 to 2020-10-03T07:30:10
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     270
+# Exec time      0    63ms    59us     7ms   233us   657us   507us   131us
+# Lock time      0    28ms    23us     7ms   102us   152us   411us    49us
+# Rows sent      0     270       1       1       1       1       0       1
+# Rows examine   0     270       1       1       1       1       0       1
+# Query size     0  17.30k      64      66   65.60   65.89       1   65.89
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ##############
+# 100us  ################################################################
+#   1ms  ##
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'clarifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`clarifications`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `clarifications` WHERE `id` = 33 LIMIT 1 FOR UPDATE\G
+
+# Query 36: 6.98 QPS, 0.00x concurrency, ID 0xEC21D2EFA0C730EA735CE0A957011765 at byte 25911097
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:33 to 2020-10-03T07:30:18
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     314
+# Exec time      0    59ms    68us     4ms   186us   332us   235us   144us
+# Lock time      0    24ms    28us   596us    77us   144us    60us    60us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0  67.53k     202     247  220.22  234.30   13.04  212.52
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  #######
+# 100us  ################################################################
+#   1ms  #
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'clarifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`clarifications`\G
+INSERT INTO `clarifications` (`team_id`, `question`, `created_at`, `updated_at`) VALUES (17, 'システムが接続できません\n799a79b1b54d7718b28b13a0ce167d95b7145aa220ca6f60fb722bd134a2b484', NOW(6), NOW(6))\G
+
+# Query 37: 7.50 QPS, 0.00x concurrency, ID 0x1AC0ADD73E8A313C91A6D9758EBE99FD at byte 29719545
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:34 to 2020-10-03T07:30:10
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     270
+# Exec time      0    50ms    54us     4ms   186us   366us   388us   108us
+# Lock time      0    24ms    17us     3ms    87us   152us   291us    42us
+# Rows sent      0     270       1       1       1       1       0       1
+# Rows examine   0     270       1       1       1       1       0       1
+# Query size     0  11.30k      42      43   42.87   42.48    0.50   42.48
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ###########################################
+# 100us  ################################################################
+#   1ms  ##
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'teams'\G
+#    SHOW CREATE TABLE `xsuportal`.`teams`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `teams` WHERE id = 49 LIMIT 1\G
+
+# Query 38: 15.50 QPS, 0.01x concurrency, ID 0xF4EB41A16552B395124BC37ED27B4312 at byte 565170
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     124
+# Exec time      0    47ms   101us    12ms   382us   761us     1ms   167us
+# Lock time      0    27ms    29us    12ms   218us   403us     1ms    60us
+# Rows sent      0     124       1       1       1       1       0       1
+# Rows examine   0     124       1       1       1       1       0       1
+# Query size     0   8.95k      69      74   73.92   72.65    0.85   72.65
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ##
+#  10ms  #
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `contestants` WHERE `id` = 'Qftu6cSV6DOl' LIMIT 1 FOR UPDATE\G
+
+# Query 39: 15.25 QPS, 0.01x concurrency, ID 0x00504F846C7528842184BFA0B4DC6FD7 at byte 349731
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     122
+# Exec time      0    41ms   144us     2ms   335us   568us   322us   236us
+# Lock time      0    10ms    40us   402us    82us   176us    55us    60us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0     122       1       1       1       1       0       1
+# Query size     0  14.60k     104     123  122.54  118.34    2.05  118.34
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ##
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+UPDATE `contestants` SET `team_id` = 5, `name` = 'GRlMY9x9Wq1VazoagmPa', `student` = 1 WHERE `id` = 'eh5forn76NID' LIMIT 1\G
+# Converted for EXPLAIN
+# EXPLAIN /*!50100 PARTITIONS*/
+select  `team_id` = 5, `name` = 'GRlMY9x9Wq1VazoagmPa', `student` = 1 from `contestants` where  `id` = 'eh5forn76NID'  LIMIT 1 \G
+
+# Query 40: 15.38 QPS, 0.01x concurrency, ID 0x4914EA69D8C778868EC9F489719D1BAE at byte 323910
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0     123
+# Exec time      0    41ms   121us     7ms   331us   490us   633us   194us
+# Lock time      0    18ms    32us     7ms   150us   185us   604us    52us
+# Rows sent      0     123       1       1       1       1       0       1
+# Rows examine   0     177       1       3    1.44    1.96    0.50    0.99
+# Query size     0   7.67k      63      64   63.83   62.76       0   62.76
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms  ##
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT COUNT(*) AS `cnt` FROM `contestants` WHERE `team_id` = 1\G
+
+# Query 41: 0.22 QPS, 0.00x concurrency, ID 0x5CEB9066DCD49DF03A2BD844DECD6E06 at byte 9042
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0    39ms    18ms    22ms    20ms    22ms     3ms    20ms
+# Lock time      0   310us   126us   184us   155us   184us    41us   155us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0      50      25      25      25      25       0      25
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms
+#  10ms  ################################################################
+# 100ms
+#    1s
+#  10s+
+TRUNCATE `benchmark_jobs`\G
+
+# Query 42: 0.22 QPS, 0.00x concurrency, ID 0x4CB7472C964B064FE0F2F50AFCEE0C88 at byte 59085
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0    39ms    13ms    26ms    20ms    26ms     9ms    20ms
+# Lock time      0   269us    92us   177us   134us   177us    60us   134us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0      48      24      24      24      24       0      24
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms
+#  10ms  ################################################################
+# 100ms
+#    1s
+#  10s+
+TRUNCATE `notifications`\G
+
+# Query 43: 0 QPS, 0x concurrency, ID 0x577B225755F9F47B35AAC71503957920 at byte 0
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: all events occurred at 2020-10-03T07:29:03
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       1
+# Exec time      0    34ms    34ms    34ms    34ms    34ms       0    34ms
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0      10      10      10      10      10       0      10
+# String:
+# Hosts        localhost
+# Users        root
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms
+#  10ms  ################################################################
+# 100ms
+#    1s
+#  10s+
+FLUSH LOGS\G
+
+# Query 44: 0.22 QPS, 0.00x concurrency, ID 0xD688E3F5705F25C79C81F0CEC4F48789 at byte 8576
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0    28ms    13ms    15ms    14ms    15ms     1ms    14ms
+# Lock time      0   295us   141us   154us   147us   154us     9us   147us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0      32      16      16      16      16       0      16
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms
+#  10ms  ################################################################
+# 100ms
+#    1s
+#  10s+
+TRUNCATE `teams`\G
+
+# Query 45: 0.22 QPS, 0.00x concurrency, ID 0xE0E82CE9009A26634DAF25CC9F9E0A86 at byte 58371
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0    27ms    13ms    14ms    13ms    14ms   232us    13ms
+# Lock time      0   208us    96us   112us   104us   112us    11us   104us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0      44      22      22      22      22       0      22
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms
+#  10ms  ################################################################
+# 100ms
+#    1s
+#  10s+
+TRUNCATE `contestants`\G
+
+# Query 46: 0.22 QPS, 0.00x concurrency, ID 0x5681DBE1347042630CA11B57E214A27F at byte 9758
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0    24ms    12ms    12ms    12ms    12ms   371us    12ms
+# Lock time      0   251us   101us   150us   125us   150us    34us   125us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0      58      29      29      29      29       0      29
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms
+#  10ms  ################################################################
+# 100ms
+#    1s
+#  10s+
+TRUNCATE `push_subscriptions`\G
+
+# Query 47: 8 QPS, 0.00x concurrency, ID 0xC501DDF8F78DE21723E3E3AAC552EBC7 at byte 568814
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      64
+# Exec time      0    21ms    45us     5ms   330us     1ms   771us    69us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0     832      13      13      13      13       0      13
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ################################################################
+# 100us  ###################
+#   1ms  #######
+#  10ms
+# 100ms
+#    1s
+#  10s+
+UNLOCK TABLES\G
+
+# Query 48: 0.22 QPS, 0.00x concurrency, ID 0x0F511D4D2D818C012CF4FABD19E740E8 at byte 11448
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0    20ms     8ms    13ms    10ms    13ms     3ms    10ms
+# Lock time      0   195us    83us   112us    97us   112us    20us    97us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0      50      25      25      25      25       0      25
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms  ################################################################
+#  10ms  ################################################################
+# 100ms
+#    1s
+#  10s+
+TRUNCATE `contest_config`\G
+
+# Query 49: 0.22 QPS, 0.00x concurrency, ID 0xB87DF3E0987D6140B7A9EFF9F4E1ED65 at byte 58846
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0    20ms    10ms    10ms    10ms    10ms   158us    10ms
+# Lock time      0   324us   111us   213us   162us   213us    72us   162us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0      50      25      25      25      25       0      25
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us
+#   1ms
+#  10ms  ################################################################
+# 100ms
+#    1s
+#  10s+
+TRUNCATE `clarifications`\G
+
+# Query 50: 0.81 QPS, 0.00x concurrency, ID 0x33A94728B6CC55367A5E91DF3C1CB8B5 at byte 194594
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:19 to 2020-10-03T07:30:34
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      61
+# Exec time      0    17ms    75us     2ms   276us   761us   278us   176us
+# Lock time      0     7ms    25us     2ms   116us   185us   205us    52us
+# Rows sent      0   1.23k       0     314   20.69  130.47   63.69       0
+# Rows examine   0   2.46k       0     628   41.38  258.32  127.70       0
+# Query size     0   3.40k      57      57      57      57       0      57
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ###########
+# 100us  ################################################################
+#   1ms  #
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'clarifications'\G
+#    SHOW CREATE TABLE `xsuportal`.`clarifications`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT * FROM `clarifications` ORDER BY `updated_at` DESC\G
+
+# Query 51: 7.62 QPS, 0.00x concurrency, ID 0x3AC4EF5F42E26C39AFC9AFBD91C10B4E at byte 915539
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      61
+# Exec time      0    14ms   166us   607us   231us   316us    65us   214us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0      61       1       1       1       1       0       1
+# Query size     0   7.18k     102     121  120.54  118.34    2.66  118.34
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+UPDATE `contestants` SET `name` = 'FU0VXuuoCVXrm8qtHNSb', `student` = 0, `team_id` = 37 WHERE id = '7kutYbcutVIL' LIMIT 1\G
+# Converted for EXPLAIN
+# EXPLAIN /*!50100 PARTITIONS*/
+select  `name` = 'FU0VXuuoCVXrm8qtHNSb', `student` = 0, `team_id` = 37 from `contestants` where  id = '7kutYbcutVIL'  LIMIT 1 \G
+
+# Query 52: 7.62 QPS, 0.00x concurrency, ID 0x809609CEDB543CF57368C4E2B6034116 at byte 137071
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      61
+# Exec time      0    11ms   151us   352us   188us   236us    34us   176us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0      61       1       1       1       1       0       1
+# Query size     0   4.21k      65      71   70.75   69.19    0.82   69.19
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'teams'\G
+#    SHOW CREATE TABLE `xsuportal`.`teams`\G
+UPDATE `teams` SET `leader_id` = 'KYOM7hnIrV6X' WHERE `id` = 10 LIMIT 1\G
+# Converted for EXPLAIN
+# EXPLAIN /*!50100 PARTITIONS*/
+select  `leader_id` = 'KYOM7hnIrV6X' from `teams` where  `id` = 10  LIMIT 1 \G
+
+# Query 53: 8 QPS, 0.00x concurrency, ID 0x529807A9C62C8075717ABFE38F7443C0 at byte 169496
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      64
+# Exec time      0     9ms    99us   295us   143us   194us    39us   131us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0      64       1       1       1       1       0       1
+# Rows examine   0   1.90k       0      60   30.47   56.92   18.03   30.94
+# Query size     0   3.38k      54      54      54      54       0      54
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'teams'\G
+#    SHOW CREATE TABLE `xsuportal`.`teams`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT COUNT(*) < 60 AS `within_capacity` FROM `teams`\G
+
+# Query 54: 7.62 QPS, 0.00x concurrency, ID 0x383A14B4F80A64F6A3FF09B0C4E39718 at byte 94646
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      61
+# Exec time      0     9ms   112us   231us   145us   185us    25us   138us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0  14.43k     228     273  242.23  246.02    9.77  234.30
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'teams'\G
+#    SHOW CREATE TABLE `xsuportal`.`teams`\G
+INSERT INTO `teams` (`name`, `email_address`, `invite_token`, `created_at`) VALUES ('相撲中毒', 'EWCqAiTtWaw5uz16@example.com', 'xkihQMTnYcdoe0tvIgdQs9PKgUBzvmQ-bSzE33sPYHsacOy1VO2esYX-pC-VFZnsgx4w8GKK31tKGxE3voSmMg==', NOW(6))\G
+
+# Query 55: 23.98 QPS, 0.00x concurrency, ID 0xEDBC971AEC392917AA353644DE4C4CB4 at byte 12065292
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:03 to 2020-10-03T07:30:34
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0    2182
+# Exec time      0     8ms     1us     1ms     3us     2us    26us     1us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0  57.53k      27      27      27      27       0      27
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isu... (2181/99%), localhost (1/0%)
+# Users        isucon (2181/99%), root (1/0%)
+# Query_time distribution
+#   1us  ################################################################
+#  10us  #
+# 100us  #
+#   1ms  #
+#  10ms
+# 100ms
+#    1s
+#  10s+
+administrator command: Quit\G
+
+# Query 56: 7.62 QPS, 0.00x concurrency, ID 0x302FA8A15FF6E0C22A871A700527E4B2 at byte 144772
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:13 to 2020-10-03T07:29:21
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      61
+# Exec time      0     4ms    49us   117us    65us    84us    13us    63us
+# Lock time      0       0       0       0       0       0       0       0
+# Rows sent      0      61       1       1       1       1       0       1
+# Rows examine   0      61       1       1       1       1       0       1
+# Query size     0   1.85k      31      31      31      31       0      31
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us  ################################################################
+# 100us  ##
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT LAST_INSERT_ID() AS `id`\G
+
+# Query 57: 0.36 QPS, 0.00x concurrency, ID 0x3126FC5549A7A647065487BFAC0A3FFF at byte 30017090
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:34 to 2020-10-03T07:30:10
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0      13
+# Exec time      0     4ms   176us   620us   301us   568us   135us   254us
+# Lock time      0   911us    25us   405us    70us    66us    97us    38us
+# Rows sent      0   2.29k     180     180     180     180       0     180
+# Rows examine   0   2.34k     184     184     184     184       0     184
+# Query size     0     897      69      69      69      69       0      69
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT `id`, `team_id` FROM `contestants` WHERE `team_id` IS NOT NULL\G
+
+# Query 58: 0.08 QPS, 0.00x concurrency, ID 0xFD5FFBB6D15F5070E3F209E180347583 at byte 5197
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:30:34
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       7
+# Exec time      0     2ms   137us   377us   215us   366us    82us   176us
+# Lock time      0   724us    61us   211us   103us   204us    49us    80us
+# Rows sent      0       6       0       1    0.86    0.99    0.35    0.99
+# Rows examine   0       6       0       1    0.86    0.99    0.35    0.99
+# Query size     0     485      65      79   69.29   76.28    4.64   65.89
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+# EXPLAIN /*!50100 PARTITIONS*/
+SELECT `password` FROM `contestants` WHERE `id` = 'isucon1' LIMIT 1\G
+
+# Query 59: 0.22 QPS, 0.00x concurrency, ID 0xD77143EEF4FAF7BC52F5526CA3C1BE46 at byte 60180
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0     1ms   501us   957us   729us   957us   322us   729us
+# Lock time      0   586us   240us   346us   293us   346us    74us   293us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0     420     210     210     210     210       0     210
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contest_config'\G
+#    SHOW CREATE TABLE `xsuportal`.`contest_config`\G
+INSERT `contest_config` (`registration_open_at`, `contest_starts_at`, `contest_freezes_at`, `contest_ends_at`) VALUES ('2020-10-03 07:29:20', '2020-10-03 07:29:30', '2020-10-03 07:30:10', '2020-10-03 07:30:20')\G
+
+# Query 60: 0.22 QPS, 0.00x concurrency, ID 0x12E13A81E7AF0AC5356CCE4D47E0280B at byte 59805
+# This item is included in the report because it matches --limit.
+# Scores: V/M = 0.00
+# Time range: 2020-10-03T07:29:10 to 2020-10-03T07:29:19
+# Attribute    pct   total     min     max     avg     95%  stddev  median
+# ============ === ======= ======= ======= ======= ======= ======= =======
+# Count          0       2
+# Exec time      0     1ms   238us   966us   602us   966us   514us   602us
+# Lock time      0   290us   112us   178us   145us   178us    46us   145us
+# Rows sent      0       0       0       0       0       0       0       0
+# Rows examine   0       0       0       0       0       0       0       0
+# Query size     0     322     161     161     161     161       0     161
+# String:
+# Databases    xsuportal
+# Hosts        isu1.t.isucon.dev
+# Users        isucon
+# Query_time distribution
+#   1us
+#  10us
+# 100us  ################################################################
+#   1ms
+#  10ms
+# 100ms
+#    1s
+#  10s+
+# Tables
+#    SHOW TABLE STATUS FROM `xsuportal` LIKE 'contestants'\G
+#    SHOW CREATE TABLE `xsuportal`.`contestants`\G
+INSERT `contestants` (`id`, `password`, `staff`, `created_at`) VALUES ('admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', TRUE, NOW(6))\G

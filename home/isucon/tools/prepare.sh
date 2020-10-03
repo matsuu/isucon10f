@@ -19,7 +19,13 @@ for ip in isu2.t.isucon.dev ; do
   ssh $ip sudo mysqladmin flush-logs
 done
 
-sudo systemctl restart xsuportal-web-golang.service
-sudo systemctl restart xsuportal-api-golang.service
+#sudo systemctl restart xsuportal-web-golang.service
+#sudo systemctl restart xsuportal-api-golang.service
+
+for ip in isu3.t.isucon.dev ; do
+  ssh $ip sudo systemctl restart xsuportal-web-golang.service
+  ssh $ip sudo systemctl restart xsuportal-api-golang.service
+done
+
 #sudo journalctl -u xsuportal-web-golang.service -f
 sudo systemctl restart varnish

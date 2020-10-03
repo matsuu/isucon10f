@@ -1,8 +1,10 @@
 package xsuportal
 
 import (
+	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/x509"
+	"database/sql"
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
@@ -98,10 +100,108 @@ func (n *Notifier) NotifyClarificationAnswered(db sqlx.Ext, c *Clarification, up
 		if n.VAPIDKey() != nil {
 			notificationPB.Id = notification.ID
 			notificationPB.CreatedAt = timestamppb.New(notification.CreatedAt)
+
 			// TODO: Web Push IIKANJI NI SHITE
+			subscriptions, err := GetPushSubscriptions(db, contestant.ID)
+			if err != nil {
+				return fmt.Errorf("get push subscrptions: %w", err)
+			}
+			if len(subscriptions) == 0 {
+				return fmt.Errorf("no push subscriptions found: contestant_id=%v", contestant.ID)
+			}
+
+	                vapidKey, err := GetVAPIDKey(WebpushVAPIDPrivateKeyPath)
+			if err != nil {
+				panic(err)
+			}
+			wg := sync.WaitGroup{}
+			for _, subscription := range subscriptions {
+				wg.Add(1)
+				go func(vapidKey *ecdsa.PrivateKey, notificationPB *resources.Notification, pushSubscription *PushSubscription) {
+					defer wg.Done()
+					SendWebPush(vapidKey, notificationPB, &subscription)
+				}(vapidKey, notificationPB, &subscription)
+			}
+			wg.Wait()
 		}
 	}
 	return nil
+}
+
+func GetPushSubscriptions(db sqlx.Queryer, contestantID string) ([]PushSubscription, error) {
+	var subscriptions []PushSubscription
+	err := sqlx.Select(
+		db,
+		&subscriptions,
+		"SELECT * FROM `push_subscriptions` WHERE `contestant_id` = ?",
+		contestantID,
+	)
+	if err != sql.ErrNoRows && err != nil {
+		return nil, fmt.Errorf("select push subscriptions: %w", err)
+	}
+	return subscriptions, nil
+}
+
+func SendWebPush(vapidKey *ecdsa.PrivateKey, notificationPB *resources.Notification, pushSubscription *PushSubscription) error {
+	b, err := proto.Marshal(notificationPB)
+	if err != nil {
+		return fmt.Errorf("marshal notification: %w", err)
+	}
+	message := make([]byte, base64.StdEncoding.EncodedLen(len(b)))
+	base64.StdEncoding.Encode(message, b)
+
+	vapidPrivateKey := base64.RawURLEncoding.EncodeToString(vapidKey.D.Bytes())
+	vapidPublicKey := base64.RawURLEncoding.EncodeToString(elliptic.Marshal(vapidKey.Curve, vapidKey.X, vapidKey.Y))
+
+	resp, err := webpush.SendNotification(
+		message,
+		&webpush.Subscription{
+			Endpoint: pushSubscription.Endpoint,
+			Keys: webpush.Keys{
+				Auth:   pushSubscription.Auth,
+				P256dh: pushSubscription.P256DH,
+			},
+		},
+		&webpush.Options{
+			Subscriber:      WebpushSubject,
+			VAPIDPublicKey:  vapidPublicKey,
+			VAPIDPrivateKey: vapidPrivateKey,
+		},
+	)
+	if err != nil {
+		return fmt.Errorf("send notification: %w", err)
+	}
+	defer resp.Body.Close()
+	expired := resp.StatusCode == 410
+	if expired {
+		return fmt.Errorf("expired notification")
+	}
+	invalid := resp.StatusCode == 404
+	if invalid {
+		return nil
+		// return fmt.Errorf("invalid notification")
+	}
+	return nil
+}
+
+func GetVAPIDKey(path string) (*ecdsa.PrivateKey, error) {
+	pemBytes, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read pem: %w", err)
+	}
+	for {
+		block, rest := pem.Decode(pemBytes)
+		pemBytes = rest
+		if block == nil {
+			break
+		}
+		ecPrivateKey, err := x509.ParseECPrivateKey(block.Bytes)
+		if err != nil {
+			continue
+		}
+		return ecPrivateKey, nil
+	}
+	return nil, fmt.Errorf("not found ec private key")
 }
 
 func (n *Notifier) NotifyBenchmarkJobFinished(db sqlx.Ext, job *BenchmarkJob) error {
@@ -134,6 +234,27 @@ func (n *Notifier) NotifyBenchmarkJobFinished(db sqlx.Ext, job *BenchmarkJob) er
 			notificationPB.Id = notification.ID
 			notificationPB.CreatedAt = timestamppb.New(notification.CreatedAt)
 			// TODO: Web Push IIKANJI NI SHITE
+			subscriptions, err := GetPushSubscriptions(db, contestant.ID)
+			if err != nil {
+				return fmt.Errorf("get push subscrptions: %w", err)
+			}
+			if len(subscriptions) == 0 {
+				return fmt.Errorf("no push subscriptions found: contestant_id=%v", contestant.ID)
+			}
+
+		        vapidKey, err := GetVAPIDKey(WebpushVAPIDPrivateKeyPath)
+			if err != nil {
+				panic(err)
+			}
+			wg := sync.WaitGroup{}
+			for _, subscription := range subscriptions {
+				wg.Add(1)
+				go func(vapidKey *ecdsa.PrivateKey, notificationPB *resources.Notification, pushSubscription *PushSubscription) {
+					defer wg.Done()
+					SendWebPush(vapidKey, notificationPB, &subscription)
+				}(vapidKey, notificationPB, &subscription)
+			}
+			wg.Wait()
 		}
 	}
 	return nil
