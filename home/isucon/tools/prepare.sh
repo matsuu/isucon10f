@@ -6,6 +6,8 @@
 #sudo rm -f /var/log/nginx/error.log
 sudo rm -f /var/log/envoy/access.log
 sudo systemctl restart envoy
+sudo rm -f /var/log/varnish/varnishncsa.log
+sudo systemctl reload varnishncsa
 
 #sudo rm -f /var/log/mysql/error.log
 #sudo rm -f /var/log/mysql/mysql-slow.log
@@ -20,3 +22,4 @@ done
 sudo systemctl restart xsuportal-web-golang.service
 sudo systemctl restart xsuportal-api-golang.service
 #sudo journalctl -u xsuportal-web-golang.service -f
+sudo systemctl restart varnish

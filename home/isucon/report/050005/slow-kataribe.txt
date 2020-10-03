@@ -1,0 +1,193 @@
+Top 50 Sort By Count
+Count     Total    Mean  Stddev     Min   P99.9     Max    2xx   3xx  4xx  5xx  TotalBytes   MinBytes  MeanBytes   MaxBytes  Request
+24537   349.469  0.0142  0.0566   0.000   0.866   0.925  24537     0    0    0  1262728007         96      51462      66060  GET /api/audience/dashboard HTTP/2
+18248  2961.208  0.1623  0.1828   0.002   1.656   2.235  18248     0    0    0      173961          0          9        101  get /api/contestant/notifications?.*
+ 5665   266.180  0.0470  0.0875   0.002   0.904   1.013   5663     0    2    0        4177          0          0         61  GET /api/contestant/notifications HTTP/2
+ 3801   795.777  0.2094  0.1952   0.003   1.725   1.985   3799     0    2    0   172951864         61      45501      66060  GET /api/contestant/dashboard HTTP/2
+ 3742   540.203  0.1444  0.1757   0.001   1.505   1.682   3740     0    2    0     8575332          0       2291       6708  GET /api/contestant/benchmark_jobs HTTP/2
+ 3129    58.581  0.0187  0.0424   0.000   0.204   0.865   3129     0    0    0   139645108       2473      44629     105858  get /packs/.*
+ 2985    53.580  0.0179  0.0590   0.000   0.865   0.866    983  2002    0    0     1130450          0        378       1150  GET /favicon.ico HTTP/2
+ 2198   410.546  0.1868  0.2358   0.000   1.795   2.272   2198     0    0    0      840882         34        382        479  GET /api/session HTTP/2
+ 2018  2166.206  1.0734  1.2107   0.003   9.380  12.080   2018     0    0    0       70332          5         34         80  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+  953  1011.922  1.0618  1.0479   0.003   5.737   5.737    951     0    2    0     3595450          0       3772       7713  GET /api/contestant/clarifications HTTP/2
+  951    16.076  0.0169  0.0264   0.000   0.384   0.384     60   891    0    0       15180          0         15        253  GET /contestant/clarifications HTTP/2
+  868    19.163  0.0221  0.0428   0.000   0.813   0.813    120   748    0    0       30360          0         34        253  GET /contestant HTTP/2
+  814    58.723  0.0721  0.0929   0.002   0.935   0.935    809     0    5    0       46799         55         57        127  POST /api/contestant/benchmark_jobs HTTP/2
+  790   103.530  0.1311  0.1683   0.002   2.258   2.258    788     0    2    0      217028         61        274        311  get /api/contestant/benchmark_jobs/:id
+  788     6.263  0.0079  0.0316   0.000   0.813   0.813    788     0    0    0      199364        253        253        253  GET / HTTP/2
+  271    70.371  0.2597  0.2291   0.003   1.471   1.471    269     0    2    0      103804         61        383        425  POST /api/contestant/clarifications HTTP/2
+  270    12.800  0.0474  0.0276   0.003   0.204   0.204    268     0    2    0      103439         61        383        425  get /api/admin/clarifications/:id
+  267    72.865  0.2729  0.9766   0.001   9.514   9.514    265     0    2    0      116692         61        437        497  put /api/admin/clarifications/:id
+  196     4.614  0.0235  0.0177   0.001   0.144   0.144    195     0    1    0          77          0          0         77  POST /api/signup HTTP/2
+  195     5.745  0.0295  0.0239   0.000   0.084   0.084    194     1    0    0       49082          0        251        253  GET /signup HTTP/2
+  124     4.336  0.0350  0.0220   0.002   0.153   0.153    122     0    2    0         152          0          1         97  POST /api/registration/contestant HTTP/2
+  124     2.465  0.0199  0.0149   0.000   0.072   0.072    124     0    0    0       31372        253        253        253  get /registration?
+   71     3.704  0.0522  0.0318   0.002   0.143   0.143     61     0   10    0         816          2         11         91  POST /api/registration/team HTTP/2
+   62    14.485  0.2336  0.8137   0.001   5.686   5.686     60     0    2    0      544708          0       8785     118277  GET /api/admin/clarifications HTTP/2
+   61     3.853  0.0632  0.0361   0.003   0.152   0.152     61     0    0    0       29606        444        485        511  GET /api/registration/session HTTP/2
+   59     0.445  0.0075  0.0188   0.000   0.117   0.117      1    58    0    0         252          0          4        252  GET /admin/clarifications HTTP/2
+    6     0.008  0.0013  0.0007   0.001   0.003   0.003      4     0    2    0         274          0         45        137  POST /api/login HTTP/2
+    2     0.187  0.0935  0.0025   0.091   0.096   0.096      2     0    0    0          56         28         28         28  POST /initialize HTTP/2
+
+Top 50 Sort By Total
+Count     Total    Mean  Stddev     Min   P99.9     Max    2xx   3xx  4xx  5xx  TotalBytes   MinBytes  MeanBytes   MaxBytes  Request
+18248  2961.208  0.1623  0.1828   0.002   1.656   2.235  18248     0    0    0      173961          0          9        101  get /api/contestant/notifications?.*
+ 2018  2166.206  1.0734  1.2107   0.003   9.380  12.080   2018     0    0    0       70332          5         34         80  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+  953  1011.922  1.0618  1.0479   0.003   5.737   5.737    951     0    2    0     3595450          0       3772       7713  GET /api/contestant/clarifications HTTP/2
+ 3801   795.777  0.2094  0.1952   0.003   1.725   1.985   3799     0    2    0   172951864         61      45501      66060  GET /api/contestant/dashboard HTTP/2
+ 3742   540.203  0.1444  0.1757   0.001   1.505   1.682   3740     0    2    0     8575332          0       2291       6708  GET /api/contestant/benchmark_jobs HTTP/2
+ 2198   410.546  0.1868  0.2358   0.000   1.795   2.272   2198     0    0    0      840882         34        382        479  GET /api/session HTTP/2
+24537   349.469  0.0142  0.0566   0.000   0.866   0.925  24537     0    0    0  1262728007         96      51462      66060  GET /api/audience/dashboard HTTP/2
+ 5665   266.180  0.0470  0.0875   0.002   0.904   1.013   5663     0    2    0        4177          0          0         61  GET /api/contestant/notifications HTTP/2
+  790   103.530  0.1311  0.1683   0.002   2.258   2.258    788     0    2    0      217028         61        274        311  get /api/contestant/benchmark_jobs/:id
+  267    72.865  0.2729  0.9766   0.001   9.514   9.514    265     0    2    0      116692         61        437        497  put /api/admin/clarifications/:id
+  271    70.371  0.2597  0.2291   0.003   1.471   1.471    269     0    2    0      103804         61        383        425  POST /api/contestant/clarifications HTTP/2
+  814    58.723  0.0721  0.0929   0.002   0.935   0.935    809     0    5    0       46799         55         57        127  POST /api/contestant/benchmark_jobs HTTP/2
+ 3129    58.581  0.0187  0.0424   0.000   0.204   0.865   3129     0    0    0   139645108       2473      44629     105858  get /packs/.*
+ 2985    53.580  0.0179  0.0590   0.000   0.865   0.866    983  2002    0    0     1130450          0        378       1150  GET /favicon.ico HTTP/2
+  868    19.163  0.0221  0.0428   0.000   0.813   0.813    120   748    0    0       30360          0         34        253  GET /contestant HTTP/2
+  951    16.076  0.0169  0.0264   0.000   0.384   0.384     60   891    0    0       15180          0         15        253  GET /contestant/clarifications HTTP/2
+   62    14.485  0.2336  0.8137   0.001   5.686   5.686     60     0    2    0      544708          0       8785     118277  GET /api/admin/clarifications HTTP/2
+  270    12.800  0.0474  0.0276   0.003   0.204   0.204    268     0    2    0      103439         61        383        425  get /api/admin/clarifications/:id
+  788     6.263  0.0079  0.0316   0.000   0.813   0.813    788     0    0    0      199364        253        253        253  GET / HTTP/2
+  195     5.745  0.0295  0.0239   0.000   0.084   0.084    194     1    0    0       49082          0        251        253  GET /signup HTTP/2
+  196     4.614  0.0235  0.0177   0.001   0.144   0.144    195     0    1    0          77          0          0         77  POST /api/signup HTTP/2
+  124     4.336  0.0350  0.0220   0.002   0.153   0.153    122     0    2    0         152          0          1         97  POST /api/registration/contestant HTTP/2
+   61     3.853  0.0632  0.0361   0.003   0.152   0.152     61     0    0    0       29606        444        485        511  GET /api/registration/session HTTP/2
+   71     3.704  0.0522  0.0318   0.002   0.143   0.143     61     0   10    0         816          2         11         91  POST /api/registration/team HTTP/2
+  124     2.465  0.0199  0.0149   0.000   0.072   0.072    124     0    0    0       31372        253        253        253  get /registration?
+   59     0.445  0.0075  0.0188   0.000   0.117   0.117      1    58    0    0         252          0          4        252  GET /admin/clarifications HTTP/2
+    2     0.187  0.0935  0.0025   0.091   0.096   0.096      2     0    0    0          56         28         28         28  POST /initialize HTTP/2
+    6     0.008  0.0013  0.0007   0.001   0.003   0.003      4     0    2    0         274          0         45        137  POST /api/login HTTP/2
+
+Top 50 Sort By Mean
+Count     Total    Mean  Stddev     Min   P99.9     Max    2xx   3xx  4xx  5xx  TotalBytes   MinBytes  MeanBytes   MaxBytes  Request
+ 2018  2166.206  1.0734  1.2107   0.003   9.380  12.080   2018     0    0    0       70332          5         34         80  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+  953  1011.922  1.0618  1.0479   0.003   5.737   5.737    951     0    2    0     3595450          0       3772       7713  GET /api/contestant/clarifications HTTP/2
+  267    72.865  0.2729  0.9766   0.001   9.514   9.514    265     0    2    0      116692         61        437        497  put /api/admin/clarifications/:id
+  271    70.371  0.2597  0.2291   0.003   1.471   1.471    269     0    2    0      103804         61        383        425  POST /api/contestant/clarifications HTTP/2
+   62    14.485  0.2336  0.8137   0.001   5.686   5.686     60     0    2    0      544708          0       8785     118277  GET /api/admin/clarifications HTTP/2
+ 3801   795.777  0.2094  0.1952   0.003   1.725   1.985   3799     0    2    0   172951864         61      45501      66060  GET /api/contestant/dashboard HTTP/2
+ 2198   410.546  0.1868  0.2358   0.000   1.795   2.272   2198     0    0    0      840882         34        382        479  GET /api/session HTTP/2
+18248  2961.208  0.1623  0.1828   0.002   1.656   2.235  18248     0    0    0      173961          0          9        101  get /api/contestant/notifications?.*
+ 3742   540.203  0.1444  0.1757   0.001   1.505   1.682   3740     0    2    0     8575332          0       2291       6708  GET /api/contestant/benchmark_jobs HTTP/2
+  790   103.530  0.1311  0.1683   0.002   2.258   2.258    788     0    2    0      217028         61        274        311  get /api/contestant/benchmark_jobs/:id
+    2     0.187  0.0935  0.0025   0.091   0.096   0.096      2     0    0    0          56         28         28         28  POST /initialize HTTP/2
+  814    58.723  0.0721  0.0929   0.002   0.935   0.935    809     0    5    0       46799         55         57        127  POST /api/contestant/benchmark_jobs HTTP/2
+   61     3.853  0.0632  0.0361   0.003   0.152   0.152     61     0    0    0       29606        444        485        511  GET /api/registration/session HTTP/2
+   71     3.704  0.0522  0.0318   0.002   0.143   0.143     61     0   10    0         816          2         11         91  POST /api/registration/team HTTP/2
+  270    12.800  0.0474  0.0276   0.003   0.204   0.204    268     0    2    0      103439         61        383        425  get /api/admin/clarifications/:id
+ 5665   266.180  0.0470  0.0875   0.002   0.904   1.013   5663     0    2    0        4177          0          0         61  GET /api/contestant/notifications HTTP/2
+  124     4.336  0.0350  0.0220   0.002   0.153   0.153    122     0    2    0         152          0          1         97  POST /api/registration/contestant HTTP/2
+  195     5.745  0.0295  0.0239   0.000   0.084   0.084    194     1    0    0       49082          0        251        253  GET /signup HTTP/2
+  196     4.614  0.0235  0.0177   0.001   0.144   0.144    195     0    1    0          77          0          0         77  POST /api/signup HTTP/2
+  868    19.163  0.0221  0.0428   0.000   0.813   0.813    120   748    0    0       30360          0         34        253  GET /contestant HTTP/2
+  124     2.465  0.0199  0.0149   0.000   0.072   0.072    124     0    0    0       31372        253        253        253  get /registration?
+ 3129    58.581  0.0187  0.0424   0.000   0.204   0.865   3129     0    0    0   139645108       2473      44629     105858  get /packs/.*
+ 2985    53.580  0.0179  0.0590   0.000   0.865   0.866    983  2002    0    0     1130450          0        378       1150  GET /favicon.ico HTTP/2
+  951    16.076  0.0169  0.0264   0.000   0.384   0.384     60   891    0    0       15180          0         15        253  GET /contestant/clarifications HTTP/2
+24537   349.469  0.0142  0.0566   0.000   0.866   0.925  24537     0    0    0  1262728007         96      51462      66060  GET /api/audience/dashboard HTTP/2
+  788     6.263  0.0079  0.0316   0.000   0.813   0.813    788     0    0    0      199364        253        253        253  GET / HTTP/2
+   59     0.445  0.0075  0.0188   0.000   0.117   0.117      1    58    0    0         252          0          4        252  GET /admin/clarifications HTTP/2
+    6     0.008  0.0013  0.0007   0.001   0.003   0.003      4     0    2    0         274          0         45        137  POST /api/login HTTP/2
+
+Top 50 Sort By Standard Deviation
+Count     Total    Mean  Stddev     Min   P99.9     Max    2xx   3xx  4xx  5xx  TotalBytes   MinBytes  MeanBytes   MaxBytes  Request
+ 2018  2166.206  1.0734  1.2107   0.003   9.380  12.080   2018     0    0    0       70332          5         34         80  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+  953  1011.922  1.0618  1.0479   0.003   5.737   5.737    951     0    2    0     3595450          0       3772       7713  GET /api/contestant/clarifications HTTP/2
+  267    72.865  0.2729  0.9766   0.001   9.514   9.514    265     0    2    0      116692         61        437        497  put /api/admin/clarifications/:id
+   62    14.485  0.2336  0.8137   0.001   5.686   5.686     60     0    2    0      544708          0       8785     118277  GET /api/admin/clarifications HTTP/2
+ 2198   410.546  0.1868  0.2358   0.000   1.795   2.272   2198     0    0    0      840882         34        382        479  GET /api/session HTTP/2
+  271    70.371  0.2597  0.2291   0.003   1.471   1.471    269     0    2    0      103804         61        383        425  POST /api/contestant/clarifications HTTP/2
+ 3801   795.777  0.2094  0.1952   0.003   1.725   1.985   3799     0    2    0   172951864         61      45501      66060  GET /api/contestant/dashboard HTTP/2
+18248  2961.208  0.1623  0.1828   0.002   1.656   2.235  18248     0    0    0      173961          0          9        101  get /api/contestant/notifications?.*
+ 3742   540.203  0.1444  0.1757   0.001   1.505   1.682   3740     0    2    0     8575332          0       2291       6708  GET /api/contestant/benchmark_jobs HTTP/2
+  790   103.530  0.1311  0.1683   0.002   2.258   2.258    788     0    2    0      217028         61        274        311  get /api/contestant/benchmark_jobs/:id
+  814    58.723  0.0721  0.0929   0.002   0.935   0.935    809     0    5    0       46799         55         57        127  POST /api/contestant/benchmark_jobs HTTP/2
+ 5665   266.180  0.0470  0.0875   0.002   0.904   1.013   5663     0    2    0        4177          0          0         61  GET /api/contestant/notifications HTTP/2
+ 2985    53.580  0.0179  0.0590   0.000   0.865   0.866    983  2002    0    0     1130450          0        378       1150  GET /favicon.ico HTTP/2
+24537   349.469  0.0142  0.0566   0.000   0.866   0.925  24537     0    0    0  1262728007         96      51462      66060  GET /api/audience/dashboard HTTP/2
+  868    19.163  0.0221  0.0428   0.000   0.813   0.813    120   748    0    0       30360          0         34        253  GET /contestant HTTP/2
+ 3129    58.581  0.0187  0.0424   0.000   0.204   0.865   3129     0    0    0   139645108       2473      44629     105858  get /packs/.*
+   61     3.853  0.0632  0.0361   0.003   0.152   0.152     61     0    0    0       29606        444        485        511  GET /api/registration/session HTTP/2
+   71     3.704  0.0522  0.0318   0.002   0.143   0.143     61     0   10    0         816          2         11         91  POST /api/registration/team HTTP/2
+  788     6.263  0.0079  0.0316   0.000   0.813   0.813    788     0    0    0      199364        253        253        253  GET / HTTP/2
+  270    12.800  0.0474  0.0276   0.003   0.204   0.204    268     0    2    0      103439         61        383        425  get /api/admin/clarifications/:id
+  951    16.076  0.0169  0.0264   0.000   0.384   0.384     60   891    0    0       15180          0         15        253  GET /contestant/clarifications HTTP/2
+  195     5.745  0.0295  0.0239   0.000   0.084   0.084    194     1    0    0       49082          0        251        253  GET /signup HTTP/2
+  124     4.336  0.0350  0.0220   0.002   0.153   0.153    122     0    2    0         152          0          1         97  POST /api/registration/contestant HTTP/2
+   59     0.445  0.0075  0.0188   0.000   0.117   0.117      1    58    0    0         252          0          4        252  GET /admin/clarifications HTTP/2
+  196     4.614  0.0235  0.0177   0.001   0.144   0.144    195     0    1    0          77          0          0         77  POST /api/signup HTTP/2
+  124     2.465  0.0199  0.0149   0.000   0.072   0.072    124     0    0    0       31372        253        253        253  get /registration?
+    2     0.187  0.0935  0.0025   0.091   0.096   0.096      2     0    0    0          56         28         28         28  POST /initialize HTTP/2
+    6     0.008  0.0013  0.0007   0.001   0.003   0.003      4     0    2    0         274          0         45        137  POST /api/login HTTP/2
+
+Top 50 Sort By Maximum(100 Percentile)
+Count     Total    Mean  Stddev     Min   P99.9     Max    2xx   3xx  4xx  5xx  TotalBytes   MinBytes  MeanBytes   MaxBytes  Request
+ 2018  2166.206  1.0734  1.2107   0.003   9.380  12.080   2018     0    0    0       70332          5         34         80  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+  267    72.865  0.2729  0.9766   0.001   9.514   9.514    265     0    2    0      116692         61        437        497  put /api/admin/clarifications/:id
+  953  1011.922  1.0618  1.0479   0.003   5.737   5.737    951     0    2    0     3595450          0       3772       7713  GET /api/contestant/clarifications HTTP/2
+   62    14.485  0.2336  0.8137   0.001   5.686   5.686     60     0    2    0      544708          0       8785     118277  GET /api/admin/clarifications HTTP/2
+ 2198   410.546  0.1868  0.2358   0.000   1.795   2.272   2198     0    0    0      840882         34        382        479  GET /api/session HTTP/2
+  790   103.530  0.1311  0.1683   0.002   2.258   2.258    788     0    2    0      217028         61        274        311  get /api/contestant/benchmark_jobs/:id
+18248  2961.208  0.1623  0.1828   0.002   1.656   2.235  18248     0    0    0      173961          0          9        101  get /api/contestant/notifications?.*
+ 3801   795.777  0.2094  0.1952   0.003   1.725   1.985   3799     0    2    0   172951864         61      45501      66060  GET /api/contestant/dashboard HTTP/2
+ 3742   540.203  0.1444  0.1757   0.001   1.505   1.682   3740     0    2    0     8575332          0       2291       6708  GET /api/contestant/benchmark_jobs HTTP/2
+  271    70.371  0.2597  0.2291   0.003   1.471   1.471    269     0    2    0      103804         61        383        425  POST /api/contestant/clarifications HTTP/2
+ 5665   266.180  0.0470  0.0875   0.002   0.904   1.013   5663     0    2    0        4177          0          0         61  GET /api/contestant/notifications HTTP/2
+  814    58.723  0.0721  0.0929   0.002   0.935   0.935    809     0    5    0       46799         55         57        127  POST /api/contestant/benchmark_jobs HTTP/2
+24537   349.469  0.0142  0.0566   0.000   0.866   0.925  24537     0    0    0  1262728007         96      51462      66060  GET /api/audience/dashboard HTTP/2
+ 2985    53.580  0.0179  0.0590   0.000   0.865   0.866    983  2002    0    0     1130450          0        378       1150  GET /favicon.ico HTTP/2
+ 3129    58.581  0.0187  0.0424   0.000   0.204   0.865   3129     0    0    0   139645108       2473      44629     105858  get /packs/.*
+  788     6.263  0.0079  0.0316   0.000   0.813   0.813    788     0    0    0      199364        253        253        253  GET / HTTP/2
+  868    19.163  0.0221  0.0428   0.000   0.813   0.813    120   748    0    0       30360          0         34        253  GET /contestant HTTP/2
+  951    16.076  0.0169  0.0264   0.000   0.384   0.384     60   891    0    0       15180          0         15        253  GET /contestant/clarifications HTTP/2
+  270    12.800  0.0474  0.0276   0.003   0.204   0.204    268     0    2    0      103439         61        383        425  get /api/admin/clarifications/:id
+  124     4.336  0.0350  0.0220   0.002   0.153   0.153    122     0    2    0         152          0          1         97  POST /api/registration/contestant HTTP/2
+   61     3.853  0.0632  0.0361   0.003   0.152   0.152     61     0    0    0       29606        444        485        511  GET /api/registration/session HTTP/2
+  196     4.614  0.0235  0.0177   0.001   0.144   0.144    195     0    1    0          77          0          0         77  POST /api/signup HTTP/2
+   71     3.704  0.0522  0.0318   0.002   0.143   0.143     61     0   10    0         816          2         11         91  POST /api/registration/team HTTP/2
+   59     0.445  0.0075  0.0188   0.000   0.117   0.117      1    58    0    0         252          0          4        252  GET /admin/clarifications HTTP/2
+    2     0.187  0.0935  0.0025   0.091   0.096   0.096      2     0    0    0          56         28         28         28  POST /initialize HTTP/2
+  195     5.745  0.0295  0.0239   0.000   0.084   0.084    194     1    0    0       49082          0        251        253  GET /signup HTTP/2
+  124     2.465  0.0199  0.0149   0.000   0.072   0.072    124     0    0    0       31372        253        253        253  get /registration?
+    6     0.008  0.0013  0.0007   0.001   0.003   0.003      4     0    2    0         274          0         45        137  POST /api/login HTTP/2
+
+TOP 37 Slow Requests
+ 1  12.080  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+ 2  10.743  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+ 3   9.514  PUT /api/admin/clarifications/220 HTTP/2
+ 4   9.380  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+ 5   9.376  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+ 6   9.301  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+ 7   9.297  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+ 8   9.297  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+ 9   9.291  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+10   9.286  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+11   9.271  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+12   9.072  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+13   8.888  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+14   8.779  PUT /api/admin/clarifications/195 HTTP/2
+15   8.618  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+16   8.012  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+17   7.801  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+18   7.797  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+19   7.791  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+20   7.255  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+21   6.931  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+22   6.456  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+23   6.117  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+24   6.012  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+25   5.981  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+26   5.925  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+27   5.737  GET /api/contestant/clarifications HTTP/2
+28   5.686  GET /api/admin/clarifications HTTP/2
+29   5.574  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+30   5.564  PUT /api/admin/clarifications/98 HTTP/2
+31   5.550  PUT /api/admin/clarifications/111 HTTP/2
+32   5.495  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+33   5.478  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+34   5.330  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+35   5.282  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2
+36   5.160  GET /api/contestant/clarifications HTTP/2
+37   5.147  POST /xsuportal.proto.services.bench.BenchmarkQueue/ReceiveBenchmarkJob HTTP/2

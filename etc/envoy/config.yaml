@@ -57,6 +57,14 @@ static_resources:
                           route:
                             cluster: xsuportal_api
                         - match:
+                            prefix: "/packs/"
+                          route:
+                            cluster: varnish
+                        - match:
+                            prefix: "/api/audience/dashboard"
+                          route:
+                            cluster: varnish
+                        - match:
                             prefix: "/"
                           route:
                             cluster: xsuportal_web
@@ -91,7 +99,19 @@ static_resources:
                   address:
                     socket_address:
                       address: "127.0.0.1"
-                      #port_value: 9292
+                      port_value: 9292
+    - name: varnish
+      type: STATIC
+      connect_timeout: 0.25s
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: varnish
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: "127.0.0.1"
                       port_value: 6081
     - name: xsuportal_api
       type: STATIC
