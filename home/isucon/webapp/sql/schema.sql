@@ -8,6 +8,7 @@ CREATE TABLE `contestants` (
   `staff` TINYINT(1) DEFAULT FALSE,
   `created_at` DATETIME(6) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8mb4;
+ALTER TABLE contestants ADD INDEX (team_id);
 
 DROP TABLE IF EXISTS `teams`;
 CREATE TABLE `teams` (

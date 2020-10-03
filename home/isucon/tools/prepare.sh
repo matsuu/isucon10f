@@ -2,19 +2,21 @@
 
 #set -e
 
-sudo rm -f /var/log/nginx/access.log
-sudo rm -f /var/log/nginx/error.log
-sudo systemctl reload nginx
+#sudo rm -f /var/log/nginx/access.log
+#sudo rm -f /var/log/nginx/error.log
+sudo rm -f /var/log/envoy/access.log
+sudo systemctl restart envoy
 
-sudo rm -f /var/log/mysql/error.log
-sudo rm -f /var/log/mysql/mysql-slow.log
-sudo mysqladmin flush-logs
+#sudo rm -f /var/log/mysql/error.log
+#sudo rm -f /var/log/mysql/mysql-slow.log
+#sudo mysqladmin flush-logs
 
-#for ip in s2 s3 ; do
-#  ssh $ip sudo rm -f /var/log/mysql/error.log
-#  ssh $ip sudo rm -f /var/log/mysql/mysql-slow.log
-#  ssh $ip sudo mysqladmin flush-logs
-#done
+for ip in isu2.t.isucon.dev ; do
+  ssh $ip sudo rm -f /var/log/mysql/error.log
+  ssh $ip sudo rm -f /var/log/mysql/mysql-slow.log
+  ssh $ip sudo mysqladmin flush-logs
+done
 
-sudo systemctl restart isuumo.go
-sudo journalctl -u isuumo.go -f
+sudo systemctl restart xsuportal-web-golang.service
+sudo systemctl restart xsuportal-api-golang.service
+#sudo journalctl -u xsuportal-web-golang.service -f

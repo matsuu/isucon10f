@@ -1,5 +1,5 @@
 # Top Ranking Group By Request
-ranking_count = 30
+ranking_count = 50
 
 # Top Slow Requests
 slow_count = 37
@@ -17,12 +17,12 @@ show_bytes = true
 percentiles = [ 99.9 ]
 
 # for Nginx($request_time)
-scale = 0
-effective_digit = 3
+#scale = 0
+#effective_digit = 3
 
 # for Apache(%D) and Varnishncsa(%D)
-#scale = -6
-#effective_digit = 6
+scale = -3
+effective_digit = 3
 
 # for Rack(Rack::CommonLogger)
 #scale = 0
@@ -34,12 +34,15 @@ effective_digit = 3
 # Apache example: "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\" %D"
 # H2O example: "%h %l %u %t \"%r\" %s %b \"%{Referer}i\" \"%{User-agent}i\" %{duration}x"
 # Varnishncsa example: '%h %l %u %t "%r" %s %b "%{Referer}i" "%{User-agent}i" %D'
-log_format = '^([^ ]+) ([^ ]+) ([^ ]+) \[([^\]]+)\] "((?:\\"|[^"])*)" (\d+) (\d+|-) "((?:\\"|[^"])*)" "((?:\\"|[^"])*)" ([0-9.]+) ([0-9.]+)$'
 
-request_index = 5
-status_index = 6
-bytes_index = 7
-duration_index = 11
+# [%START_TIME%] "%REQ(:METHOD)% %REQ(X-ENVOY-ORIGINAL-PATH?:PATH)% %PROTOCOL%" %RESPONSE_CODE% %RESPONSE_FLAGS% %BYTES_RECEIVED% %BYTES_SENT% %DURATION% %RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)% "%REQ(X-FORWARDED-FOR)%" "%REQ(USER-AGENT)%" "%REQ(X-REQUEST-ID)%" "%REQ(:AUTHORITY)%" "%UPSTREAM_HOST%"\n
+log_format = '^\[([^\]]+)\] "((?:\\"|[^"])*)" (\d+) (\d+|-) (\d+) (\d+) (\d+) (\d+) .*$'
+
+request_index = 2
+status_index = 3
+#bytes_index = 5
+bytes_index = 6
+duration_index = 7
 
 # Rack example: use Rack::CommonLogger, Logger.new("/tmp/app.log")
 #log_format = '^([^ ]+) ([^ ]+) ([^ ]+) \[([^\]]+)\] "((?:\\"|[^"])*)" (\d+) (\d+|-) ([0-9.]+)$'
@@ -51,56 +54,33 @@ duration_index = 11
 # You can aggregate requests by regular expression
 # For overview of regexp syntax: https://golang.org/pkg/regexp/syntax/
 [[bundle]]
-regexp = '^(GET|HEAD) /api/chair/[0-9]+'
-name = "get /api/chair/:id"
+regexp = '^(GET|HEAD) /packs/.*'
+name = "get /packs/.*"
 
 [[bundle]]
-regexp = '^(GET|HEAD) /api/chair/search'
-name = "get /api/chair/search"
+regexp = '^(GET|HEAD) /api/contestant/notifications\?'
+name = "get /api/contestant/notifications?.*"
 
 [[bundle]]
-regexp = '^(GET|HEAD) /api/chair/low_priced'
-name = "get /api/chair/low_priced"
+regexp = '^(GET|HEAD) /api/contestant/benchmark_jobs/[0-9]+ '
+name = "get /api/contestant/benchmark_jobs/:id"
 
 [[bundle]]
-regexp = '^(GET|HEAD) /api/chair/search/condition'
-name = "get /api/chair/search/condition"
+regexp = '^(GET|HEAD) /api/admin/clarifications/[0-9]+ '
+name = "get /api/admin/clarifications/:id"
 
 [[bundle]]
-regexp = '^POST /api/chair/buy/[0-9]+'
-name = "post /api/chair/buy/:id"
+regexp = '^POST /api/admin/clarifications/[0-9]+ '
+name = "post /api/admin/clarifications/:id"
 
 [[bundle]]
-regexp = '^(GET|HEAD) /api/estate/[0-9]+'
-name = "get /api/estate/:id"
+regexp = '^PUT /api/admin/clarifications/[0-9]+ '
+name = "put /api/admin/clarifications/:id"
 
 [[bundle]]
-regexp = '^(GET|HEAD) /api/estate/search'
-name = "get /api/estate/search"
+regexp = '^(GET|HEAD) /registration\?'
+name = "get /registration?"
 
-[[bundle]]
-regexp = '^(GET|HEAD) /api/estate/low_priced'
-name = "get /api/estate/low_priced"
-
-[[bundle]]
-regexp = '^POST /api/estate/req_doc/[0-9]+'
-name = "post /api/estate/req_doc/[0-9]+"
-
-[[bundle]]
-regexp = '^(GET|HEAD) /api/estate/search/condition'
-name = "get /api/estate/search/condition"
-
-[[bundle]]
-regexp = '^(GET|HEAD) /api/recommended_estate/[0-9]+'
-name = "get /api/recommended_estate/:id"
-
-[[bundle]]
-regexp = '^(GET|HEAD) /images/'
-name = "get /images/*"
-
-[[bundle]]
-regexp = '^(GET|HEAD) /_next/'
-name = "get /_next/*"
 
 # You can replace the part of urls which matched to your regular expressions.
 # For overview of regexp syntax: https://golang.org/pkg/regexp/syntax/
