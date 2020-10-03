@@ -11,6 +11,7 @@
 /etc/mysql/my.cnf.fallback
 /etc/mysql/mysql.cnf
 !/etc/nginx
+!/etc/envoy
 !/etc/systemd
 /etc/systemd/*
 !/etc/systemd/system
