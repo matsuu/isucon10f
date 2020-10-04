@@ -47,6 +47,7 @@ const (
 
 var db *sqlx.DB
 var notifier xsuportal.Notifier
+var defaultContestStatus xsuportal.ContestStatus
 
 func main() {
 	srv := echo.New()
@@ -64,6 +65,11 @@ func main() {
 
 	db, _ = xsuportal.GetDB()
 	db.SetMaxOpenConns(10)
+
+	err := sqlx.Get(db, &defaultContestStatus, "SELECT * FROM `contest_config`")
+	if err != nil {
+		panic(err)
+	}
 
 	// srv.Use(middleware.Logger())
 	srv.Use(middleware.Recover())
@@ -184,6 +190,11 @@ func (*AdminService) Initialize(e echo.Context) error {
 		if err != nil {
 			return fmt.Errorf("insert contest: %w", err)
 		}
+	}
+
+	err = sqlx.Get(db, &defaultContestStatus, "SELECT * FROM `contest_config`")
+	if err != nil {
+		return fmt.Errorf("failed to get contest_config: %w", err)
 	}
 
 	host := util.GetEnv("BENCHMARK_SERVER_HOST", "localhost")
@@ -1160,11 +1171,21 @@ func getCurrentTeam(e echo.Context, db sqlx.Queryer, lock bool) (*xsuportal.Team
 }
 
 func getCurrentContestStatus(e echo.Context, db sqlx.Queryer) (*xsuportal.ContestStatus, error) {
-	var contestStatus xsuportal.ContestStatus
-	err := sqlx.Get(db, &contestStatus, "SELECT *, NOW(6) AS `current_time`, CASE WHEN NOW(6) < `registration_open_at` THEN 'standby' WHEN `registration_open_at` <= NOW(6) AND NOW(6) < `contest_starts_at` THEN 'registration' WHEN `contest_starts_at` <= NOW(6) AND NOW(6) < `contest_ends_at` THEN 'started' WHEN `contest_ends_at` <= NOW(6) THEN 'finished' ELSE 'unknown' END AS `status`, IF(`contest_starts_at` <= NOW(6) AND NOW(6) < `contest_freezes_at`, 1, 0) AS `frozen` FROM `contest_config`")
-	if err != nil {
-		return nil, fmt.Errorf("query contest status: %w", err)
+	contestStatus := defaultContestStatus
+	now := time.Now().Round(time.Microsecond)
+	contestStatus.CurrentTime = now
+	switch {
+	case now.Before(contestStatus.RegistrationOpenAt):
+		contestStatus.StatusStr = "standby"
+	case now.Before(contestStatus.ContestStartsAt):
+		contestStatus.StatusStr = "registration"
+	case now.Before(contestStatus.ContestEndsAt):
+		contestStatus.StatusStr = "started"
+	default:
+		contestStatus.StatusStr = "finished"
 	}
+	contestStatus.Frozen = !now.Before(contestStatus.ContestStartsAt) && now.Before(contestStatus.ContestFreezesAt)
+
 	statusStr := contestStatus.StatusStr
 	if e.Echo().Debug {
 		b, err := ioutil.ReadFile(DebugContestStatusFilePath)
