@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	_ "net/http/pprof"
 	"strconv"
 	"strings"
 	"sync"
@@ -124,6 +125,8 @@ func main() {
 	srv.POST("/api/signup", contestant.Signup)
 	srv.POST("/api/login", contestant.Login)
 	srv.POST("/api/logout", contestant.Logout)
+
+	srv.GET("/debug/pprof/*", echo.WrapHandler(http.DefaultServeMux))
 
 	srv.Logger.Error(srv.StartServer(srv.Server))
 }
