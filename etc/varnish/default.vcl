@@ -48,7 +48,7 @@ sub vcl_backend_response {
     }
     if (bereq.url ~ "^/api/audience/dashboard") {
       set beresp.ttl = 0.7s;
-      set beresp.grace = 0.7s;
+      set beresp.grace = 0.3s;
       set beresp.http.cache-control = "public, max-age=1";
     }
 }

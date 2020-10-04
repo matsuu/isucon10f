@@ -1,4 +1,4 @@
 #!/bin/sh
 
-go tool pprof -no_browser -http :8888 /home/isucon/isuumo/webapp/go/isuumo 127.0.0.1:1323/debug/pprof/profile?seconds=30
+go tool pprof -no_browser -http :8888 /home/isucon/webapp/golang/bin/xsuportal isu3.t.isucon.dev:9292/debug/pprof/profile?seconds=30
 
