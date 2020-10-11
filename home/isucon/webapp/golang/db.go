@@ -3,6 +3,7 @@ package xsuportal
 import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+	"github.com/gomodule/redigo/redis"
 
 	"github.com/isucon/isucon10-final/webapp/golang/util"
 )
@@ -22,3 +23,12 @@ func GetDB() (*sqlx.DB, error) {
 
 	return sqlx.Open("mysql", mysqlConfig.FormatDSN())
 }
+
+func GetRedis() (*redis.Pool) {
+	return &redis.Pool{
+		MaxIdle: 600,
+		MaxActive: 0,
+		Dial: func() (redis.Conn, error) {return redis.Dial("tcp", ":6379") },
+	}
+}
+

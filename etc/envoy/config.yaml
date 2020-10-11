@@ -14,7 +14,7 @@ static_resources:
                 codec_type: AUTO
                 stat_prefix: 'router'
                 http_filters:
-                  - name: envoy.router
+                  - name: envoy.filters.http.router
                     typed_config: {}
                 route_config:
                   name: http
@@ -40,7 +40,7 @@ static_resources:
                 codec_type: AUTO
                 stat_prefix: 'router'
                 http_filters:
-                  - name: envoy.router
+                  - name: envoy.filters.http.router
                     typed_config: {}
                 route_config:
                   name: https
@@ -65,15 +65,27 @@ static_resources:
                           route:
                             cluster: varnish
                         - match:
-                            prefix: "/"
+                            prefix: "/api/"
                           route:
                             cluster: xsuportal_web
+                        - match:
+                            prefix: "/initialize"
+                          route:
+                            cluster: xsuportal_web
+                        - match:
+                            prefix: "/debug/"
+                          route:
+                            cluster: xsuportal_web
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: varnish
                 use_remote_address: true
-                access_log:
-                  - name: envoy.file_access_log
-                    typed_config:
-                      "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
-                      path: /var/log/envoy/access.log
+                #access_log:
+                #  - name: envoy.file_access_log
+                #    typed_config:
+                #      "@type": type.googleapis.com/envoy.extensions.access_loggers.file.v3.FileAccessLog
+                #      path: /var/log/envoy/access.log
           transport_socket:
             name: envoy.transport_sockets.tls
             typed_config:
@@ -102,7 +114,7 @@ static_resources:
                       port_value: 9292
     - name: varnish
       type: STATIC
-      connect_timeout: 0.25s
+      connect_timeout: 0.5s
       lb_policy: ROUND_ROBIN
       load_assignment:
         cluster_name: varnish

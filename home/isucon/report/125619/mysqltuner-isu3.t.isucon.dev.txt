@@ -1,0 +1,6 @@
+ >>  MySQLTuner 1.7.19 - Major Hayden <major@mhtx.net>
+ >>  Bug reports, feature requests, and downloads at http://mysqltuner.com/
+ >>  Run with '--help' for additional options and output filtering
+
+[--] Skipped version check for MySQLTuner script
+[!!] Attempted to use login credentials from Debian maintenance account, but they failed.

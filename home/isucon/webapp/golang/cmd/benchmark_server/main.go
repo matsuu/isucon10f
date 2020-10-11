@@ -8,9 +8,12 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"strings"
+	"strconv"
 	"time"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/gomodule/redigo/redis"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,6 +26,7 @@ import (
 )
 
 var db *sqlx.DB
+var rds *redis.Pool
 
 type benchmarkQueueService struct {
 }
@@ -51,19 +55,6 @@ func (b *benchmarkQueueService) ReceiveBenchmarkJob(ctx context.Context, req *be
 				return false, nil
 			}
 
-			// var gotLock bool
-			// err = tx.Get(
-			// 	&gotLock,
-			// 	"SELECT 1 FROM `benchmark_jobs` WHERE `id` = ? AND `status` = ? FOR UPDATE",
-			// 	job.ID,
-			// 	resources.BenchmarkJob_PENDING,
-			// )
-			// if err == sql.ErrNoRows {
-			// 	return true, nil
-			// }
-			// if err != nil {
-			// 	return false, fmt.Errorf("get benchmark job with lock: %w", err)
-			// }
 			randomBytes := make([]byte, 16)
 			_, err = rand.Read(randomBytes)
 			if err != nil {
@@ -115,7 +106,7 @@ func (b *benchmarkQueueService) ReceiveBenchmarkJob(ctx context.Context, req *be
 		}
 	}
 	if jobHandle != nil {
-		log.Printf("[DEBUG] Dequeued: job_handle=%+v", jobHandle)
+		// log.Printf("[DEBUG] Dequeued: job_handle=%+v", jobHandle)
 	}
 	return &bench.ReceiveBenchmarkJobResponse{
 		JobHandle: jobHandle,
@@ -164,7 +155,7 @@ func (b *benchmarkReportService) ReportBenchmarkResult(srv bench.BenchmarkReport
 				return fmt.Errorf("get benchmark job: %w", err)
 			}
 			if req.Result.Finished {
-				log.Printf("[DEBUG] %v: save as finished", req.JobId)
+				// log.Printf("[DEBUG] %v: save as finished", req.JobId)
 				if err := b.saveAsFinished(tx, &job, req); err != nil {
 					return err
 				}
@@ -175,7 +166,7 @@ func (b *benchmarkReportService) ReportBenchmarkResult(srv bench.BenchmarkReport
 					return fmt.Errorf("notify benchmark job finished: %w", err)
 				}
 			} else {
-				log.Printf("[DEBUG] %v: save as running", req.JobId)
+				// log.Printf("[DEBUG] %v: save as running", req.JobId)
 				if err := b.saveAsRunning(tx, &job, req); err != nil {
 					return err
 				}
@@ -253,26 +244,36 @@ func (b *benchmarkReportService) saveAsRunning(db sqlx.Execer, job *xsuportal.Be
 }
 
 func pollBenchmarkJob(db sqlx.Queryer) (*xsuportal.BenchmarkJob, error) {
-	for i := 0; i < 10; i++ {
-		if i >= 1 {
-			time.Sleep(50 * time.Millisecond)
+	conn := rds.Get()
+	defer conn.Close()
+	v, err := redis.Values(conn.Do("BRPOP", "jobs", 0))
+	if err != nil {
+		if err == redis.ErrNil {
+			return nil, nil
 		}
-		var job xsuportal.BenchmarkJob
-		err := sqlx.Get(
-			db,
-			&job,
-			"SELECT * FROM `benchmark_jobs` WHERE `status` = ? ORDER BY `id` LIMIT 1",
-			resources.BenchmarkJob_PENDING,
-		)
-		if err == sql.ErrNoRows {
-			continue
-		}
-		if err != nil {
-			return nil, fmt.Errorf("get benchmark job: %w", err)
-		}
-		return &job, nil
+		return nil, fmt.Errorf("redis error: %w", err)
 	}
-	return nil, nil
+	var key string
+	var jobStr string
+	redis.Scan(v, &key, &jobStr)
+	jobSlice := strings.Split(jobStr, "@")
+
+	jobId, err := strconv.ParseInt(jobSlice[0], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	targetHostName := jobSlice[1]
+	unixNano, err := strconv.ParseInt(jobSlice[2], 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	createdAt := time.Unix(0, unixNano)
+	job := xsuportal.BenchmarkJob{
+		ID: jobId,
+		TargetHostName: targetHostName,
+		CreatedAt: createdAt,
+	}
+	return &job, nil
 }
 
 func main() {
@@ -285,8 +286,14 @@ func main() {
 	}
 	log.Print("[INFO] listen ", address)
 
+	rds = xsuportal.GetRedis()
+	if err != nil {
+		panic(err)
+	}
+
 	db, _ = xsuportal.GetDB()
-	db.SetMaxOpenConns(10)
+	db.SetMaxOpenConns(200)
+	db.SetMaxIdleConns(200)
 
 	server := grpc.NewServer()
 

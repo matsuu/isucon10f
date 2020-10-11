@@ -1,5 +1,12 @@
 #!/bin/sh
 
+set -e
+
+(
+  cd ${HOME}/webapp/golang
+  make
+)
+
 for ip in isu3.t.isucon.dev
 do
 	ssh $ip sudo systemctl stop xsuportal-web-golang

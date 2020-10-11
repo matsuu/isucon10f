@@ -22,6 +22,12 @@ sub vcl_recv {
     if (req.url ~ "^/initialize") {
        ban("obj.http.url ~ ^/api/audience/dashboard");
     }
+    if (req.url ~ "^/registration\?") {
+       set req.url = regsub(req.url, "\?.*", "");
+    }
+    if (req.http.Cookie) {
+      unset req.http.Cookie;
+    }
     # Happens before we check if we have this in cache already.
     #
     # Typically you clean up the request here, removing cookies you don't need,
@@ -33,23 +39,23 @@ sub vcl_backend_response {
     #
     # Here you clean the response headers, removing silly Set-Cookie headers
     # and other mistakes your backend does.
-    if (beresp.http.content-type ~ "text") {
-      set beresp.do_gzip = true;
+    if (beresp.status >= 500 && bereq.is_bgfetch) {
+      return (abandon);
     }
-    if (beresp.http.content-type ~ "javascript") {
-      set beresp.do_gzip = true;
+    if (beresp.status >= 500) {
+      set beresp.uncacheable = true;
     }
-    if (beresp.http.content-type ~ "protobuf") {
+    if (beresp.http.content-type ~ "text|javascript|protobuf") {
       set beresp.do_gzip = true;
-    }
-    if (bereq.url ~ "^/packs/") {
-      set beresp.ttl = 60s;
-      set beresp.http.cache-control = "public, max-age=60";
     }
     if (bereq.url ~ "^/api/audience/dashboard") {
-      set beresp.ttl = 0.7s;
-      set beresp.grace = 0.3s;
-      set beresp.http.cache-control = "public, max-age=1";
+      if (beresp.ttl > 0s) {
+        set beresp.ttl = beresp.ttl - 0.1s;
+        set beresp.grace = 0.1s;
+      }
+    } else {
+      set beresp.ttl = 86400s;
+      set beresp.http.cache-control = "public, max-age=86400";
     }
 }
 

@@ -6,6 +6,7 @@ require (
 	github.com/SherClockHolmes/webpush-go v1.1.2
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.4.2
+	github.com/gomodule/redigo v1.8.2
 	github.com/gorilla/sessions v1.2.1
 	github.com/jmoiron/sqlx v1.2.1-0.20200615141059-0794cb1f47ee
 	github.com/labstack/echo-contrib v0.9.0

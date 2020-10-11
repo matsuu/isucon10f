@@ -28,11 +28,11 @@ user		= mysql
 #
 # Instead of skip-networking the default is now to listen only on
 # localhost which is more compatible and is not less secure.
-bind-address		= 127.0.0.1
+bind-address		= 0.0.0.0
 #
 # * Fine Tuning
 #
-key_buffer_size		= 16M
+key_buffer_size		= 8M
 # max_allowed_packet	= 64M
 # thread_stack		= 256K
 
@@ -42,7 +42,7 @@ key_buffer_size		= 16M
 # the first time they are touched
 myisam-recover-options  = BACKUP
 
-# max_connections        = 151
+max_connections        = 1002
 
 # table_open_cache       = 4000
 
@@ -72,16 +72,22 @@ log_error = /var/log/mysql/error.log
 # server-id		= 1
 # log_bin			= /var/log/mysql/mysql-bin.log
 # binlog_expire_logs_seconds	= 2592000
-max_binlog_size   = 100M
+#max_binlog_size   = 100M
 # binlog_do_db		= include_database_name
 # binlog_ignore_db	= include_database_name
 
-slow_query_log = 1
+slow_query_log = 0
 slow_query_log_file = /var/log/mysql/mysql-slow.log
 long_query_time = 0
 
 innodb_doublewrite = 0
 innodb_flush_log_at_trx_commit = 0
 innodb_flush_log_at_timeout = 3
+innodb_log_group_home_dir = /dev/shm
+
+thread_cache_size = 1002
+performance_schema = 0
 
 disable-log-bin
+
+table_open_cache = 16384

@@ -88,3 +88,54 @@ CREATE TABLE `contest_config` (
 
 ALTER TABLE contestants ADD INDEX (team_id);
 ALTER TABLE benchmark_jobs ADD INDEX (team_id, created_at);
+
+DROP TABLE IF EXISTS `scores`;
+CREATE TABLE `scores` (
+  `team_id` BIGINT NOT NULL,
+  `student` BOOLEAN NOT NULL DEFAULT FALSE,
+  `best_score` INT NOT NULL DEFAULT 0,
+  `best_score_started_at` DATETIME(6),
+  `best_score_marked_at` DATETIME(6),
+  `latest_score` INT NOT NULL DEFAULT 0,
+  `latest_score_started_at` DATETIME(6),
+  `latest_score_marked_at` DATETIME(6),
+  `finish_count` INT NOT NULL DEFAULT 0,
+  `freeze_best_score` INT NOT NULL DEFAULT 0,
+  `freeze_best_score_started_at` DATETIME(6),
+  `freeze_best_score_marked_at` DATETIME(6),
+  `freeze_latest_score` INT NOT NULL DEFAULT 0,
+  `freeze_latest_score_started_at` DATETIME(6),
+  `freeze_latest_score_marked_at` DATETIME(6),
+  `freeze_finish_count` INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (team_id)
+) ENGINE=InnoDB DEFAULT CHARACTER SET=utf8mb4;
+
+
+DROP TRIGGER IF EXISTS insert_score;
+DROP TRIGGER IF EXISTS update_score;
+DROP TRIGGER IF EXISTS update_student;
+delimiter //
+CREATE TRIGGER insert_score AFTER INSERT ON teams
+  FOR EACH ROW
+  BEGIN
+    INSERT INTO `scores` (`team_id`) VALUES (NEW.id);
+  END;//
+
+
+CREATE TRIGGER update_score AFTER UPDATE ON benchmark_jobs
+  FOR EACH ROW
+  BEGIN
+    IF NEW.finished_at IS NOT NULL THEN
+      UPDATE scores SET latest_score=NEW.score_raw-NEW.score_deduction, latest_score_started_at=NEW.started_at, latest_score_marked_at=NEW.finished_at, finish_count=finish_count+1 WHERE team_id=NEW.team_id;
+      UPDATE scores SET best_score=latest_score, best_score_started_at=latest_score_started_at, best_score_marked_at=latest_score_marked_at WHERE team_id=NEW.team_id AND best_score<=latest_score;
+      UPDATE scores SET freeze_best_score=best_score, freeze_best_score_started_at=best_score_started_at, freeze_best_score_marked_at=best_score_marked_at, freeze_latest_score=latest_score, freeze_latest_score_started_at=latest_score_started_at, freeze_latest_score_marked_at=latest_score_marked_at, freeze_finish_count=freeze_finish_count+1 WHERE team_id=NEW.team_id AND latest_score_marked_at<(SELECT MAX(contest_freezes_at) FROM contest_config);
+    END IF;
+  END;//
+
+CREATE TRIGGER update_student AFTER UPDATE ON contestants
+  FOR EACH ROW
+  BEGIN
+   UPDATE `scores` SET student = (SELECT SUM(student) = COUNT(*) FROM contestants WHERE team_id = NEW.team_id) WHERE team_id = NEW.team_id;
+  END;//
+delimiter ;
+

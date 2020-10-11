@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/gomodule/redigo/redis"
 	"github.com/golang/protobuf/proto"
 	"github.com/gorilla/sessions"
 	"github.com/jmoiron/sqlx"
@@ -38,7 +39,7 @@ import (
 )
 
 const (
-	TeamCapacity               = 120
+	TeamCapacity               = 90
 	AdminID                    = "admin"
 	AdminPassword              = "admin"
 	DebugContestStatusFilePath = "/tmp/XSUPORTAL_CONTEST_STATUS"
@@ -47,8 +48,12 @@ const (
 )
 
 var db *sqlx.DB
+var rds *redis.Pool
 var notifier xsuportal.Notifier
 var defaultContestStatus xsuportal.ContestStatus
+var teamPBMap sync.Map
+var teamMap sync.Map
+var contestantMap sync.Map
 
 func main() {
 	srv := echo.New()
@@ -64,12 +69,47 @@ func main() {
 		}
 	}
 
-	db, _ = xsuportal.GetDB()
-	db.SetMaxOpenConns(10)
-
-	err := sqlx.Get(db, &defaultContestStatus, "SELECT * FROM `contest_config`")
+	var err error
+	rds = xsuportal.GetRedis()
 	if err != nil {
 		panic(err)
+	}
+
+	db, _ = xsuportal.GetDB()
+	db.SetMaxOpenConns(800)
+	db.SetMaxIdleConns(800)
+
+	err = sqlx.Get(db, &defaultContestStatus, "SELECT * FROM `contest_config`")
+	if err != sql.ErrNoRows && err != nil {
+		panic(err)
+	}
+
+	rows, _ := db.Queryx("SELECT * FROM teams")
+	if err != sql.ErrNoRows && err != nil {
+		panic(err)
+	}
+	for rows.Next() {
+		var team xsuportal.Team
+		rows.StructScan(&team)
+		cacheTeam(&team)
+	}
+	rows.Close()
+
+	rows, _ = db.Queryx("SELECT * FROM contestants")
+	if err != sql.ErrNoRows && err != nil {
+		panic(err)
+	}
+	for rows.Next() {
+		var contestant xsuportal.Contestant
+		rows.StructScan(&contestant)
+		cacheContestant(&contestant)
+	}
+	rows.Close()
+
+	ns, _ := makeNotificationsPB([]*xsuportal.Notification{})
+	nsResponse = contestantpb.ListNotificationsResponse{
+		Notifications:               ns,
+		LastAnsweredClarificationId: 0,
 	}
 
 	// srv.Use(middleware.Logger())
@@ -154,6 +194,12 @@ func (*AdminService) Initialize(e echo.Context) error {
 		return err
 	}
 
+	conn := rds.Get()
+	defer conn.Close()
+	if _, err := conn.Do("FLUSHALL"); err != nil {
+		return err
+	}
+
 	queries := []string{
 		"TRUNCATE `teams`",
 		"TRUNCATE `contestants`",
@@ -162,6 +208,7 @@ func (*AdminService) Initialize(e echo.Context) error {
 		"TRUNCATE `notifications`",
 		"TRUNCATE `push_subscriptions`",
 		"TRUNCATE `contest_config`",
+		"TRUNCATE `scores`",
 	}
 	for _, query := range queries {
 		_, err := db.Exec(query)
@@ -209,29 +256,58 @@ func (*AdminService) Initialize(e echo.Context) error {
 			Port: int64(port),
 		},
 	}
+	teamPBMap = sync.Map{}
+	teamMap = sync.Map{}
+	contestantMap = sync.Map{}
+	rows, _ := db.Queryx("SELECT * FROM contestants")
+	if err != sql.ErrNoRows && err != nil {
+		panic(err)
+	}
+	for rows.Next() {
+		var contestant xsuportal.Contestant
+		rows.StructScan(&contestant)
+		cacheContestant(&contestant)
+	}
+	rows.Close()
+
+	finishedLeaderboard = nil
+
 	return writeProto(e, http.StatusOK, res)
 }
 
 func (*AdminService) ListClarifications(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{}); !ok {
+	contestant, _, ok, err := loginRequired(e, db, &loginRequiredOption{})
+	if !ok {
 		return wrapError("check session", err)
 	}
-	contestant, _ := getCurrentContestant(e, db, false)
 	if !contestant.Staff {
 		return halt(e, http.StatusForbidden, "管理者権限が必要です", nil)
 	}
-	var clarifications []xsuportal.Clarification
-	err := db.Select(&clarifications, "SELECT * FROM `clarifications` ORDER BY `updated_at` DESC")
+	rows, err := db.Queryx("SELECT * FROM `clarifications` JOIN teams ON clarifications.team_id = teams.id ORDER BY clarifications.updated_at DESC")
 	if err != sql.ErrNoRows && err != nil {
 		return fmt.Errorf("query clarifications: %w", err)
 	}
 	res := &adminpb.ListClarificationsResponse{}
-	for _, clarification := range clarifications {
+	defer rows.Close()
+	for rows.Next() {
+		var clarification xsuportal.Clarification
 		var team xsuportal.Team
-		err := db.Get(
-			&team,
-			"SELECT * FROM `teams` WHERE `id` = ? LIMIT 1",
-			clarification.TeamID,
+		err := rows.Scan(
+			&clarification.ID,
+			&clarification.TeamID,
+			&clarification.Disclosed,
+			&clarification.Question,
+			&clarification.Answer,
+			&clarification.AnsweredAt,
+			&clarification.CreatedAt,
+			&clarification.UpdatedAt,
+			&team.ID,
+			&team.Name,
+			&team.LeaderID,
+			&team.EmailAddress,
+			&team.InviteToken,
+			&team.Withdrawn,
+			&team.CreatedAt,
 		)
 		if err != nil {
 			return fmt.Errorf("query team(id=%v, clarification=%v): %w", clarification.TeamID, clarification.ID, err)
@@ -246,34 +322,42 @@ func (*AdminService) ListClarifications(e echo.Context) error {
 }
 
 func (*AdminService) GetClarification(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{}); !ok {
+	contestant, _, ok, err := loginRequired(e, db, &loginRequiredOption{})
+	if !ok {
 		return wrapError("check session", err)
 	}
 	id, err := strconv.Atoi(e.Param("id"))
 	if err != nil {
 		return fmt.Errorf("parse id: %w", err)
 	}
-	contestant, _ := getCurrentContestant(e, db, false)
+	// contestant, _ := getCurrentContestant(e, db, false)
 	if !contestant.Staff {
 		return halt(e, http.StatusForbidden, "管理者権限が必要です", nil)
 	}
 	var clarification xsuportal.Clarification
-	err = db.Get(
-		&clarification,
-		"SELECT * FROM `clarifications` WHERE `id` = ? LIMIT 1",
+	var team xsuportal.Team
+	err = db.QueryRowx(
+		"SELECT * FROM `clarifications` JOIN teams ON clarifications.team_id = teams.id WHERE clarifications.id = ? LIMIT 1",
 		id,
+	).Scan(
+		&clarification.ID,
+		&clarification.TeamID,
+		&clarification.Disclosed,
+		&clarification.Question,
+		&clarification.Answer,
+		&clarification.AnsweredAt,
+		&clarification.CreatedAt,
+		&clarification.UpdatedAt,
+		&team.ID,
+		&team.Name,
+		&team.LeaderID,
+		&team.EmailAddress,
+		&team.InviteToken,
+		&team.Withdrawn,
+		&team.CreatedAt,
 	)
 	if err != nil {
 		return fmt.Errorf("get clarification: %w", err)
-	}
-	var team xsuportal.Team
-	err = db.Get(
-		&team,
-		"SELECT * FROM `teams` WHERE id = ? LIMIT 1",
-		clarification.TeamID,
-	)
-	if err != nil {
-		return fmt.Errorf("get team: %w", err)
 	}
 	c, err := makeClarificationPB(db, &clarification, &team)
 	if err != nil {
@@ -285,14 +369,15 @@ func (*AdminService) GetClarification(e echo.Context) error {
 }
 
 func (*AdminService) RespondClarification(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{}); !ok {
+	contestant, _, ok, err := loginRequired(e, db, &loginRequiredOption{})
+	if !ok {
 		return wrapError("check session", err)
 	}
 	id, err := strconv.Atoi(e.Param("id"))
 	if err != nil {
 		return fmt.Errorf("parse id: %w", err)
 	}
-	contestant, _ := getCurrentContestant(e, db, false)
+	// contestant, _ := getCurrentContestant(e, db, false)
 	if !contestant.Staff {
 		return halt(e, http.StatusForbidden, "管理者権限が必要です", nil)
 	}
@@ -332,22 +417,29 @@ func (*AdminService) RespondClarification(e echo.Context) error {
 		return fmt.Errorf("update clarification: %w", err)
 	}
 	var clarification xsuportal.Clarification
-	err = tx.Get(
-		&clarification,
-		"SELECT * FROM `clarifications` WHERE `id` = ? LIMIT 1",
+	var team xsuportal.Team
+	err = tx.QueryRowx(
+		"SELECT * FROM `clarifications` JOIN teams ON clarifications.team_id = teams.id WHERE clarifications.id = ? LIMIT 1",
 		id,
+	).Scan(
+		&clarification.ID,
+		&clarification.TeamID,
+		&clarification.Disclosed,
+		&clarification.Question,
+		&clarification.Answer,
+		&clarification.AnsweredAt,
+		&clarification.CreatedAt,
+		&clarification.UpdatedAt,
+		&team.ID,
+		&team.Name,
+		&team.LeaderID,
+		&team.EmailAddress,
+		&team.InviteToken,
+		&team.Withdrawn,
+		&team.CreatedAt,
 	)
 	if err != nil {
 		return fmt.Errorf("get clarification: %w", err)
-	}
-	var team xsuportal.Team
-	err = tx.Get(
-		&team,
-		"SELECT * FROM `teams` WHERE `id` = ? LIMIT 1",
-		clarification.TeamID,
-	)
-	if err != nil {
-		return fmt.Errorf("get team: %w", err)
 	}
 	c, err := makeClarificationPB(tx, &clarification, &team)
 	if err != nil {
@@ -376,7 +468,7 @@ func (*CommonService) GetCurrentSession(e echo.Context) error {
 	if currentContestant != nil {
 		res.Contestant = makeContestantPB(currentContestant)
 	}
-	currentTeam, err := getCurrentTeam(e, db, false)
+	currentTeam, err := getCurrentTeam(e, db, false, currentContestant)
 	if err != nil {
 		return fmt.Errorf("get current team: %w", err)
 	}
@@ -409,25 +501,28 @@ func (*ContestantService) EnqueueBenchmarkJob(e echo.Context) error {
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback()
-	if ok, err := loginRequired(e, tx, &loginRequiredOption{Team: true}); !ok {
+	_, team, ok, err := loginRequired(e, tx, &loginRequiredOption{Team: true});
+	if !ok {
 		return wrapError("check session", err)
 	}
 	if ok, err := contestStatusRestricted(e, tx, resourcespb.Contest_STARTED, "競技時間外はベンチマークを実行できません"); !ok {
 		return wrapError("check contest status", err)
 	}
-	team, _ := getCurrentTeam(e, tx, false)
-	var jobCount int
-	err = tx.Get(
-		&jobCount,
-		"SELECT COUNT(*) AS `cnt` FROM `benchmark_jobs` WHERE `team_id` = ? AND `finished_at` IS NULL",
+	// team, _ := getCurrentTeam(e, tx, false, nil)
+
+	var hasJob bool
+	err = db.Get(
+		&hasJob,
+		"SELECT TRUE AS `cnt` FROM `benchmark_jobs` WHERE `team_id` = ? AND `finished_at` IS NULL LIMIT 1 LOCK IN SHARE MODE",
 		team.ID,
 	)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return fmt.Errorf("count benchmark job: %w", err)
 	}
-	if jobCount > 0 {
+	if hasJob {
 		return halt(e, http.StatusForbidden, "既にベンチマークを実行中です", nil)
 	}
+
 	_, err = tx.Exec(
 		"INSERT INTO `benchmark_jobs` (`team_id`, `target_hostname`, `status`, `updated_at`, `created_at`) VALUES (?, ?, ?, NOW(6), NOW(6))",
 		team.ID,
@@ -449,16 +544,26 @@ func (*ContestantService) EnqueueBenchmarkJob(e echo.Context) error {
 		return fmt.Errorf("commit tx: %w", err)
 	}
 	j := makeBenchmarkJobPB(&job)
+
+	conn := rds.Get()
+	defer conn.Close()
+	jobStr := fmt.Sprintf("%d@%s@%d", job.ID, job.TargetHostName, job.CreatedAt.UnixNano())
+	_, err = conn.Do("LPUSH", "jobs", jobStr)
+	if err != nil {
+		return fmt.Errorf("redis: %w", err)
+	}
+
 	return writeProto(e, http.StatusOK, &contestantpb.EnqueueBenchmarkJobResponse{
 		Job: j,
 	})
 }
 
 func (*ContestantService) ListBenchmarkJobs(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{Team: true}); !ok {
+	_, team, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
-	jobs, err := makeBenchmarkJobsPB(e, db, 0)
+	jobs, err := makeBenchmarkJobsPB(e, db, team, 0)
 	if err != nil {
 		return fmt.Errorf("make benchmark jobs: %w", err)
 	}
@@ -468,14 +573,15 @@ func (*ContestantService) ListBenchmarkJobs(e echo.Context) error {
 }
 
 func (*ContestantService) GetBenchmarkJob(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{Team: true}); !ok {
+	_, team, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
 	id, err := strconv.Atoi(e.Param("id"))
 	if err != nil {
 		return fmt.Errorf("parse id: %w", err)
 	}
-	team, _ := getCurrentTeam(e, db, false)
+	// team, _ := getCurrentTeam(e, db, false, nil)
 	var job xsuportal.BenchmarkJob
 	err = db.Get(
 		&job,
@@ -495,26 +601,39 @@ func (*ContestantService) GetBenchmarkJob(e echo.Context) error {
 }
 
 func (*ContestantService) ListClarifications(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{Team: true}); !ok {
+	_, team, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
-	team, _ := getCurrentTeam(e, db, false)
-	var clarifications []xsuportal.Clarification
-	err := db.Select(
-		&clarifications,
-		"SELECT * FROM `clarifications` WHERE `team_id` = ? OR `disclosed` = TRUE ORDER BY `id` DESC",
+	// team, _ := getCurrentTeam(e, db, false, nil)
+	rows, err := db.Queryx(
+		"SELECT * FROM `clarifications` JOIN teams ON clarifications.team_id = teams.id WHERE `team_id` = ? OR `disclosed` = TRUE ORDER BY clarifications.id DESC",
 		team.ID,
 	)
 	if err != sql.ErrNoRows && err != nil {
 		return fmt.Errorf("select clarifications: %w", err)
 	}
 	res := &contestantpb.ListClarificationsResponse{}
-	for _, clarification := range clarifications {
+	defer rows.Close()
+	for rows.Next() {
+		var clarification xsuportal.Clarification
 		var team xsuportal.Team
-		err := db.Get(
-			&team,
-			"SELECT * FROM `teams` WHERE `id` = ? LIMIT 1",
-			clarification.TeamID,
+		err := rows.Scan(
+			&clarification.ID,
+			&clarification.TeamID,
+			&clarification.Disclosed,
+			&clarification.Question,
+			&clarification.Answer,
+			&clarification.AnsweredAt,
+			&clarification.CreatedAt,
+			&clarification.UpdatedAt,
+			&team.ID,
+			&team.Name,
+			&team.LeaderID,
+			&team.EmailAddress,
+			&team.InviteToken,
+			&team.Withdrawn,
+			&team.CreatedAt,
 		)
 		if err != nil {
 			return fmt.Errorf("get team(id=%v): %w", clarification.TeamID, err)
@@ -529,7 +648,8 @@ func (*ContestantService) ListClarifications(e echo.Context) error {
 }
 
 func (*ContestantService) RequestClarification(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{Team: true}); !ok {
+	_, team, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
 	var req contestantpb.RequestClarificationRequest
@@ -541,7 +661,7 @@ func (*ContestantService) RequestClarification(e echo.Context) error {
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback()
-	team, _ := getCurrentTeam(e, tx, false)
+	// team, _ := getCurrentTeam(e, tx, false, nil)
 	_, err = tx.Exec(
 		"INSERT INTO `clarifications` (`team_id`, `question`, `created_at`, `updated_at`) VALUES (?, ?, NOW(6), NOW(6))",
 		team.ID,
@@ -568,40 +688,113 @@ func (*ContestantService) RequestClarification(e echo.Context) error {
 }
 
 func (*ContestantService) Dashboard(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{Team: true}); !ok {
+	_, team, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
-	team, _ := getCurrentTeam(e, db, false)
+	// team, _ := getCurrentTeam(e, db, false, nil)
 	leaderboard, err := makeLeaderboardPB(e, team.ID)
 	if err != nil {
 		return fmt.Errorf("make leaderboard: %w", err)
+	}
+	contestStatus, err := getCurrentContestStatus(e)
+	if err != nil {
+		return fmt.Errorf("get current contest status: %w", err)
+	}
+	if contestStatus.Status == resourcespb.Contest_FINISHED {
+		e.Response().Header().Set("Cache-Control", "private, max-age=11")
 	}
 	return writeProto(e, http.StatusOK, &contestantpb.DashboardResponse{
 		Leaderboard: leaderboard,
 	})
 }
 
-var once sync.Once
+
 var nsResponse contestantpb.ListNotificationsResponse
 func (*ContestantService) ListNotifications(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{Team: true}); !ok {
+	_, _, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
-	once.Do(func() {
-		var notifications []*xsuportal.Notification
-		var lastAnsweredClarificationID int64
-
-		ns, _ := makeNotificationsPB(notifications)
-		nsResponse = contestantpb.ListNotificationsResponse{
-			Notifications:               ns,
-			LastAnsweredClarificationId: lastAnsweredClarificationID,
-		}
-	})
 	return writeProto(e, http.StatusOK, &nsResponse)
 }
 
+/*
+func (*ContestantService) ListNotifications(e echo.Context) error {
+	contestant, team, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
+		return wrapError("check session", err)
+	}
+
+	afterStr := e.QueryParam("after")
+
+	tx, err := db.Beginx()
+	if err != nil {
+		return fmt.Errorf("begin tx: %w", err)
+	}
+	defer tx.Rollback()
+	// contestant, _ := getCurrentContestant(e, tx, false)
+
+	var notifications []*xsuportal.Notification
+	if afterStr != "" {
+		after, err := strconv.Atoi(afterStr)
+		if err != nil {
+			return fmt.Errorf("parse after: %w", err)
+		}
+		err = tx.Select(
+			&notifications,
+			"SELECT * FROM `notifications` WHERE `contestant_id` = ? AND `id` > ? ORDER BY `id`",
+			contestant.ID,
+			after,
+		)
+		if err != sql.ErrNoRows && err != nil {
+			return fmt.Errorf("select notifications(after=%v): %w", after, err)
+		}
+	} else {
+		err = tx.Select(
+			&notifications,
+			"SELECT * FROM `notifications` WHERE `contestant_id` = ? ORDER BY `id`",
+			contestant.ID,
+		)
+		if err != sql.ErrNoRows && err != nil {
+			return fmt.Errorf("select notifications: %w", err)
+		}
+	}
+	_, err = tx.Exec(
+		"UPDATE `notifications` SET `read` = TRUE WHERE `contestant_id` = ? AND `read` = FALSE",
+		contestant.ID,
+	)
+	if err != nil {
+		return fmt.Errorf("update notifications: %w", err)
+	}
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit tx: %w", err)
+	}
+	// team, _ := getCurrentTeam(e, db, false, nil)
+
+	var lastAnsweredClarificationID int64
+	err = db.Get(
+		&lastAnsweredClarificationID,
+		"SELECT `id` FROM `clarifications` WHERE (`team_id` = ? OR `disclosed` = TRUE) AND `answered_at` IS NOT NULL ORDER BY `id` DESC LIMIT 1",
+		team.ID,
+	)
+	if err != sql.ErrNoRows && err != nil {
+		return fmt.Errorf("get last answered clarification: %w", err)
+	}
+	ns, err := makeNotificationsPB(notifications)
+	if err != nil {
+		return fmt.Errorf("make notifications: %w", err)
+	}
+	return writeProto(e, http.StatusOK, &contestantpb.ListNotificationsResponse{
+		Notifications:               ns,
+		LastAnsweredClarificationId: lastAnsweredClarificationID,
+	})
+}
+*/
+
 func (*ContestantService) SubscribeNotification(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{Team: true}); !ok {
+	contestant, _, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
 
@@ -614,8 +807,8 @@ func (*ContestantService) SubscribeNotification(e echo.Context) error {
 		return err
 	}
 
-	contestant, _ := getCurrentContestant(e, db, false)
-	_, err := db.Exec(
+	// contestant, _ := getCurrentContestant(e, db, false)
+	_, err = db.Exec(
 		"INSERT INTO `push_subscriptions` (`contestant_id`, `endpoint`, `p256dh`, `auth`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?, NOW(6), NOW(6))",
 		contestant.ID,
 		req.Endpoint,
@@ -629,7 +822,8 @@ func (*ContestantService) SubscribeNotification(e echo.Context) error {
 }
 
 func (*ContestantService) UnsubscribeNotification(e echo.Context) error {
-	if ok, err := loginRequired(e, db, &loginRequiredOption{Team: true}); !ok {
+	contestant, _, ok, err := loginRequired(e, db, &loginRequiredOption{Team: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
 
@@ -642,8 +836,8 @@ func (*ContestantService) UnsubscribeNotification(e echo.Context) error {
 		return err
 	}
 
-	contestant, _ := getCurrentContestant(e, db, false)
-	_, err := db.Exec(
+	// contestant, _ := getCurrentContestant(e, db, false)
+	_, err = db.Exec(
 		"DELETE FROM `push_subscriptions` WHERE `contestant_id` = ? AND `endpoint` = ? LIMIT 1",
 		contestant.ID,
 		req.Endpoint,
@@ -672,6 +866,11 @@ func (*ContestantService) Signup(e echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("insert contestant: %w", err)
 	}
+
+	var contestant xsuportal.Contestant
+	db.Get(&contestant, "SELECT * FROM contestants WHERE id = ?", req.ContestantId)
+	cacheContestant(&contestant)
+
 	sess, err := session.Get(SessionName, e)
 	if err != nil {
 		return fmt.Errorf("get session: %w", err)
@@ -746,7 +945,7 @@ type RegistrationService struct{}
 
 func (*RegistrationService) GetRegistrationSession(e echo.Context) error {
 	var team *xsuportal.Team
-	currentTeam, err := getCurrentTeam(e, db, false)
+	currentTeam, err := getCurrentTeam(e, db, false, nil)
 	if err != nil {
 		return fmt.Errorf("get current team: %w", err)
 	}
@@ -825,26 +1024,21 @@ func (*RegistrationService) CreateTeam(e echo.Context) error {
 	if err := e.Bind(&req); err != nil {
 		return err
 	}
-	if ok, err := loginRequired(e, db, &loginRequiredOption{}); !ok {
+	contestant, _, ok, err := loginRequired(e, db, &loginRequiredOption{})
+	if !ok {
 		return wrapError("check session", err)
 	}
-	ok, err := contestStatusRestricted(e, db, resourcespb.Contest_REGISTRATION, "チーム登録期間ではありません")
+	ok, err = contestStatusRestricted(e, db, resourcespb.Contest_REGISTRATION, "チーム登録期間ではありません")
 	if !ok {
 		return wrapError("check contest status", err)
 	}
 
 	ctx := context.Background()
-	conn, err := db.Connx(ctx)
+	tx, err := db.BeginTxx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("get conn: %w", err)
+		return fmt.Errorf("failed to begin: %w", err)
 	}
-	defer conn.Close()
-
-	_, err = conn.ExecContext(ctx, "LOCK TABLES `teams` WRITE, `contestants` WRITE")
-	if err != nil {
-		return fmt.Errorf("lock tables: %w", err)
-	}
-	defer conn.ExecContext(ctx, "UNLOCK TABLES")
+	defer tx.Rollback()
 
 	randomBytes := make([]byte, 64)
 	_, err = rand.Read(randomBytes)
@@ -852,19 +1046,8 @@ func (*RegistrationService) CreateTeam(e echo.Context) error {
 		return fmt.Errorf("read random: %w", err)
 	}
 	inviteToken := base64.URLEncoding.EncodeToString(randomBytes)
-	var withinCapacity bool
-	err = conn.QueryRowContext(
-		ctx,
-		"SELECT COUNT(*) < ? AS `within_capacity` FROM `teams`",
-		TeamCapacity,
-	).Scan(&withinCapacity)
-	if err != nil {
-		return fmt.Errorf("check capacity: %w", err)
-	}
-	if !withinCapacity {
-		return halt(e, http.StatusForbidden, "チーム登録数上限です", nil)
-	}
-	_, err = conn.ExecContext(
+
+	res, err := tx.ExecContext(
 		ctx,
 		"INSERT INTO `teams` (`name`, `email_address`, `invite_token`, `created_at`) VALUES (?, ?, ?, NOW(6))",
 		req.TeamName,
@@ -874,18 +1057,26 @@ func (*RegistrationService) CreateTeam(e echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("insert team: %w", err)
 	}
-	var teamID int64
-	err = conn.QueryRowContext(
-		ctx,
-		"SELECT LAST_INSERT_ID() AS `id`",
-	).Scan(&teamID)
+	teamID, err := res.LastInsertId()
 	if err != nil || teamID == 0 {
 		return halt(e, http.StatusInternalServerError, "チームを登録できませんでした", nil)
 	}
 
-	contestant, _ := getCurrentContestant(e, db, false)
+	var withinCapacity bool
+	err = tx.QueryRowContext(
+		ctx,
+		"SELECT COUNT(*) <= ? AS `within_capacity` FROM `teams`",
+		TeamCapacity,
+	).Scan(&withinCapacity)
+	if err != nil {
+		return fmt.Errorf("check capacity: %w", err)
+	}
+	if !withinCapacity {
+		return halt(e, http.StatusForbidden, "チーム登録数上限です", nil)
+	}
+	// contestant, _ := getCurrentContestant(e, tx, false)
 
-	_, err = conn.ExecContext(
+	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE `contestants` SET `name` = ?, `student` = ?, `team_id` = ? WHERE id = ? LIMIT 1",
 		req.Name,
@@ -897,7 +1088,7 @@ func (*RegistrationService) CreateTeam(e echo.Context) error {
 		return fmt.Errorf("update contestant: %w", err)
 	}
 
-	_, err = conn.ExecContext(
+	_, err = tx.ExecContext(
 		ctx,
 		"UPDATE `teams` SET `leader_id` = ? WHERE `id` = ? LIMIT 1",
 		contestant.ID,
@@ -906,6 +1097,27 @@ func (*RegistrationService) CreateTeam(e echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("update team: %w", err)
 	}
+
+	var team xsuportal.Team
+	err = tx.QueryRowxContext(
+		ctx,
+		"SELECT * FROM teams WHERE id = ?",
+		teamID,
+	).StructScan(&team)
+	if err != nil {
+		return fmt.Errorf("select team: %w", err)
+	}
+	err = tx.Get(contestant, "SELECT * FROM contestants WHERE id = ?", contestant.ID)
+	if err != nil {
+		return fmt.Errorf("select contestant: %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit: %w", err)
+	}
+
+	cacheTeam(&team)
+	cacheContestant(contestant)
 
 	return writeProto(e, http.StatusOK, &registrationpb.CreateTeamResponse{
 		TeamId: teamID,
@@ -923,7 +1135,8 @@ func (*RegistrationService) JoinTeam(e echo.Context) error {
 	}
 	defer tx.Rollback()
 
-	if ok, err := loginRequired(e, tx, &loginRequiredOption{Lock: true}); !ok {
+	contestant, _, ok, err := loginRequired(e, tx, &loginRequiredOption{Lock: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
 	if ok, err := contestStatusRestricted(e, tx, resourcespb.Contest_REGISTRATION, "チーム登録期間ではありません"); !ok {
@@ -955,7 +1168,7 @@ func (*RegistrationService) JoinTeam(e echo.Context) error {
 		return halt(e, http.StatusBadRequest, "チーム人数の上限に達しています", nil)
 	}
 
-	contestant, _ := getCurrentContestant(e, tx, false)
+	// contestant, _ := getCurrentContestant(e, tx, false)
 	_, err = tx.Exec(
 		"UPDATE `contestants` SET `team_id` = ?, `name` = ?, `student` = ? WHERE `id` = ? LIMIT 1",
 		req.TeamId,
@@ -966,9 +1179,14 @@ func (*RegistrationService) JoinTeam(e echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("update contestant: %w", err)
 	}
+
+	tx.Get(contestant, "SELECT * FROM contestants WHERE id = ?", contestant.ID)
+
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit tx: %w", err)
 	}
+	cacheTeam(&team)
+	cacheContestant(contestant)
 	return writeProto(e, http.StatusOK, &registrationpb.JoinTeamResponse{})
 }
 
@@ -982,11 +1200,12 @@ func (*RegistrationService) UpdateRegistration(e echo.Context) error {
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback()
-	if ok, err := loginRequired(e, tx, &loginRequiredOption{Team: true, Lock: true}); !ok {
+	contestant, team, ok, err := loginRequired(e, tx, &loginRequiredOption{Team: true, Lock: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
-	team, _ := getCurrentTeam(e, tx, false)
-	contestant, _ := getCurrentContestant(e, tx, false)
+	// team, _ := getCurrentTeam(e, tx, false, nil)
+	// contestant, _ := getCurrentContestant(e, tx, false)
 	if team.LeaderID.Valid && team.LeaderID.String == contestant.ID {
 		_, err := tx.Exec(
 			"UPDATE `teams` SET `name` = ?, `email_address` = ? WHERE `id` = ? LIMIT 1",
@@ -1007,9 +1226,14 @@ func (*RegistrationService) UpdateRegistration(e echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("update contestant: %w", err)
 	}
+
+	tx.Get(contestant, "SELECT * FROM contestants WHERE id = ?", contestant.ID)
+
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit tx: %w", err)
 	}
+	cacheTeam(team)
+	cacheContestant(contestant)
 	return writeProto(e, http.StatusOK, &registrationpb.UpdateRegistrationResponse{})
 }
 
@@ -1019,14 +1243,15 @@ func (*RegistrationService) DeleteRegistration(e echo.Context) error {
 		return fmt.Errorf("begin tx: %w", err)
 	}
 	defer tx.Rollback()
-	if ok, err := loginRequired(e, tx, &loginRequiredOption{Team: true, Lock: true}); !ok {
+	contestant, team, ok, err := loginRequired(e, tx, &loginRequiredOption{Team: true, Lock: true})
+	if !ok {
 		return wrapError("check session", err)
 	}
 	if ok, err := contestStatusRestricted(e, tx, resourcespb.Contest_REGISTRATION, "チーム登録期間外は辞退できません"); !ok {
 		return wrapError("check contest status", err)
 	}
-	team, _ := getCurrentTeam(e, tx, false)
-	contestant, _ := getCurrentContestant(e, tx, false)
+	// team, _ := getCurrentTeam(e, tx, false, nil)
+	// contestant, _ := getCurrentContestant(e, tx, false)
 	if team.LeaderID.Valid && team.LeaderID.String == contestant.ID {
 		_, err := tx.Exec(
 			"UPDATE `teams` SET `withdrawn` = TRUE, `leader_id` = NULL WHERE `id` = ? LIMIT 1",
@@ -1051,9 +1276,14 @@ func (*RegistrationService) DeleteRegistration(e echo.Context) error {
 			return fmt.Errorf("withdrawn contestant(id=%v): %w", contestant.ID, err)
 		}
 	}
+
+	tx.Get(contestant, "SELECT * FROM contestants WHERE id = ?", contestant.ID)
+
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit tx: %w", err)
 	}
+	cacheTeam(team)
+	cacheContestant(contestant)
 	return writeProto(e, http.StatusOK, &registrationpb.DeleteRegistrationResponse{})
 }
 
@@ -1097,6 +1327,16 @@ func (*AudienceService) Dashboard(e echo.Context) error {
 	if err != nil {
 		return fmt.Errorf("make leaderboard: %w", err)
 	}
+	contestStatus, err := getCurrentContestStatus(e)
+	if err != nil {
+		return fmt.Errorf("get current contest status: %w", err)
+	}
+	maxAge := 1
+	if contestStatus.Status == resourcespb.Contest_FINISHED {
+		maxAge = 11
+	}
+	cacheControl := fmt.Sprintf("public, max-age=%d", maxAge)
+	e.Response().Header().Set("Cache-Control", cacheControl)
 	return writeProto(e, http.StatusOK, &audiencepb.DashboardResponse{
 		Leaderboard: leaderboard,
 	})
@@ -1129,51 +1369,67 @@ func getCurrentContestant(e echo.Context, db sqlx.Queryer, lock bool) (*xsuporta
 	if !ok {
 		return nil, nil
 	}
-	var contestant xsuportal.Contestant
-	query := "SELECT * FROM `contestants` WHERE `id` = ? LIMIT 1"
 	if lock {
-		query += " FOR UPDATE"
+		var contestant xsuportal.Contestant
+		query := "SELECT * FROM `contestants` WHERE `id` = ? LIMIT 1 FOR UPDATE"
+		err := sqlx.Get(db, &contestant, query, contestantID)
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		if err != nil {
+			return nil, fmt.Errorf("query contestant: %w", err)
+		}
+		xc.Contestant = &contestant
+	} else {
+		if v, ok := contestantMap.Load(contestantID); ok {
+			xc.Contestant = v.(*xsuportal.Contestant)
+		} else {
+			return nil, nil
+		}
 	}
-	err = sqlx.Get(db, &contestant, query, contestantID)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("query contestant: %w", err)
-	}
-	xc.Contestant = &contestant
 	return xc.Contestant, nil
 }
 
-func getCurrentTeam(e echo.Context, db sqlx.Queryer, lock bool) (*xsuportal.Team, error) {
+func getCurrentTeam(e echo.Context, db sqlx.Queryer, lock bool, contestantParam *xsuportal.Contestant) (*xsuportal.Team, error) {
 	xc := getXsuportalContext(e)
 	if xc.Team != nil {
 		return xc.Team, nil
 	}
-	contestant, err := getCurrentContestant(e, db, false)
-	if err != nil {
-		return nil, fmt.Errorf("current contestant: %w", err)
+	var contestant *xsuportal.Contestant
+	var err error
+	if contestantParam != nil {
+		contestant = contestantParam
+	} else {
+		contestant, err = getCurrentContestant(e, db, false)
+		if err != nil {
+			return nil, fmt.Errorf("current contestant: %w", err)
+		}
 	}
 	if contestant == nil {
 		return nil, nil
 	}
-	var team xsuportal.Team
-	query := "SELECT * FROM `teams` WHERE `id` = ? LIMIT 1"
 	if lock {
-		query += " FOR UPDATE"
+		var team xsuportal.Team
+		query := "SELECT * FROM `teams` WHERE `id` = ? LIMIT 1 FOR UPDATE"
+		err = sqlx.Get(db, &team, query, contestant.TeamID.Int64)
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		if err != nil {
+			return nil, fmt.Errorf("query team: %w", err)
+		}
+		xc.Team = &team
+	} else {
+		if v, ok := teamMap.Load(contestant.TeamID.Int64); ok {
+			xc.Team = v.(*xsuportal.Team)
+		} else {
+			return nil, nil
+		}
 	}
-	err = sqlx.Get(db, &team, query, contestant.TeamID.Int64)
-	if err == sql.ErrNoRows {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("query team: %w", err)
-	}
-	xc.Team = &team
 	return xc.Team, nil
 }
 
-func getCurrentContestStatus(e echo.Context, db sqlx.Queryer) (*xsuportal.ContestStatus, error) {
+func getCurrentContestStatus(e echo.Context) (*xsuportal.ContestStatus, error) {
 	contestStatus := defaultContestStatus
 	now := time.Now().Round(time.Microsecond)
 	contestStatus.CurrentTime = now
@@ -1216,28 +1472,29 @@ type loginRequiredOption struct {
 	Lock bool
 }
 
-func loginRequired(e echo.Context, db sqlx.Queryer, option *loginRequiredOption) (bool, error) {
+func loginRequired(e echo.Context, db sqlx.Queryer, option *loginRequiredOption) (*xsuportal.Contestant, *xsuportal.Team, bool, error) {
 	contestant, err := getCurrentContestant(e, db, option.Lock)
 	if err != nil {
-		return false, fmt.Errorf("current contestant: %w", err)
+		return contestant, nil, false, fmt.Errorf("current contestant: %w", err)
 	}
 	if contestant == nil {
-		return false, halt(e, http.StatusUnauthorized, "ログインが必要です", nil)
+		return contestant, nil, false, halt(e, http.StatusUnauthorized, "ログインが必要です", nil)
 	}
 	if option.Team {
-		t, err := getCurrentTeam(e, db, option.Lock)
+		t, err := getCurrentTeam(e, db, option.Lock, contestant)
 		if err != nil {
-			return false, fmt.Errorf("current team: %w", err)
+			return contestant, t, false, fmt.Errorf("current team: %w", err)
 		}
 		if t == nil {
-			return false, halt(e, http.StatusForbidden, "参加登録が必要です", nil)
+			return contestant, t, false, halt(e, http.StatusForbidden, "参加登録が必要です", nil)
 		}
+		return contestant, t, true, nil
 	}
-	return true, nil
+	return contestant, nil, true, nil
 }
 
 func contestStatusRestricted(e echo.Context, db sqlx.Queryer, status resourcespb.Contest_Status, message string) (bool, error) {
-	contestStatus, err := getCurrentContestStatus(e, db)
+	contestStatus, err := getCurrentContestStatus(e)
 	if err != nil {
 		return false, fmt.Errorf("get current contest status: %w", err)
 	}
@@ -1291,41 +1548,34 @@ func makeClarificationPB(db sqlx.Queryer, c *xsuportal.Clarification, t *xsuport
 }
 
 func makeTeamPB(db sqlx.Queryer, t *xsuportal.Team, detail bool, enableMembers bool) (*resourcespb.Team, error) {
-	pb := &resourcespb.Team{
-		Id:        t.ID,
-		Name:      t.Name,
-		LeaderId:  t.LeaderID.String,
-		Withdrawn: t.Withdrawn,
+	var pbv resourcespb.Team
+	if v, ok := teamPBMap.Load(t.ID); ok {
+		pbv = *v.(*resourcespb.Team)
+	} else {
+		var team xsuportal.Team
+		db.QueryRowx("SELECT * FROM teams WHERE id = ?", t.ID).Scan(&team)
+		v, err := cacheTeam(&team)
+		if err != nil {
+			return nil, err
+		}
+		pbv = *v
 	}
-	if detail {
-		pb.Detail = &resourcespb.Team_TeamDetail{
-			EmailAddress: t.EmailAddress,
-			InviteToken:  t.InviteToken,
-		}
+
+	if !detail {
+		pbv.Detail = nil
 	}
-	if enableMembers {
-		if t.LeaderID.Valid {
-			var leader xsuportal.Contestant
-			if err := sqlx.Get(db, &leader, "SELECT * FROM `contestants` WHERE `id` = ? LIMIT 1", t.LeaderID.String); err != nil {
-				return nil, fmt.Errorf("get leader: %w", err)
-			}
-			pb.Leader = makeContestantPB(&leader)
+	if !enableMembers {
+		if !t.LeaderID.Valid {
+			pbv.Leader = nil
 		}
-		var members []xsuportal.Contestant
-		if err := sqlx.Select(db, &members, "SELECT * FROM `contestants` WHERE `team_id` = ? ORDER BY `created_at`", t.ID); err != nil {
-			return nil, fmt.Errorf("select members: %w", err)
-		}
-		for _, member := range members {
-			pb.Members = append(pb.Members, makeContestantPB(&member))
-			pb.MemberIds = append(pb.MemberIds, member.ID)
-		}
+		pbv.Members = []*resourcespb.Contestant{}
+		pbv.MemberIds = []string{}
 	}
-	if t.Student.Valid {
-		pb.Student = &resourcespb.Team_StudentStatus{
-			Status: t.Student.Bool,
-		}
+	if !t.Student.Valid {
+		pbv.Student = nil
 	}
-	return pb, nil
+
+	return &pbv, nil
 }
 
 func makeContestantPB(c *xsuportal.Contestant) *resourcespb.Contestant {
@@ -1339,7 +1589,7 @@ func makeContestantPB(c *xsuportal.Contestant) *resourcespb.Contestant {
 }
 
 func makeContestPB(e echo.Context) (*resourcespb.Contest, error) {
-	contestStatus, err := getCurrentContestStatus(e, db)
+	contestStatus, err := getCurrentContestStatus(e)
 	if err != nil {
 		return nil, fmt.Errorf("get current contest status: %w", err)
 	}
@@ -1353,8 +1603,55 @@ func makeContestPB(e echo.Context) (*resourcespb.Contest, error) {
 	}, nil
 }
 
+func cacheTeam(t *xsuportal.Team) (*resourcespb.Team, error) {
+	// fmt.Printf("[DEBUG]cacheTeam %s\n", t.ID)
+	pb := &resourcespb.Team{
+		Id:        t.ID,
+		Name:      t.Name,
+		LeaderId:  t.LeaderID.String,
+		Withdrawn: t.Withdrawn,
+	}
+	pb.Detail = &resourcespb.Team_TeamDetail{
+		EmailAddress: t.EmailAddress,
+		InviteToken:  t.InviteToken,
+	}
+	rows, err := db.Queryx("SELECT * FROM `contestants` WHERE `team_id` = ? ORDER BY `created_at`", t.ID)
+	if err != nil {
+		return nil, fmt.Errorf("select members: %w", err)
+	}
+	defer rows.Close()
+	isStudent := true
+	for rows.Next() {
+		var member xsuportal.Contestant
+		rows.StructScan(&member)
+		pb.Members = append(pb.Members, makeContestantPB(&member))
+		pb.MemberIds = append(pb.MemberIds, member.ID)
+		if t.LeaderID.Valid && t.LeaderID.String == member.ID {
+			pb.Leader = makeContestantPB(&member)
+		}
+		isStudent = isStudent && member.Student
+	}
+	pb.Student = &resourcespb.Team_StudentStatus{
+		Status: isStudent,
+	}
+	teamMap.Store(t.ID, t)
+	teamPBMap.Store(t.ID, pb)
+	return pb, nil
+}
+
+func cacheContestant(c *xsuportal.Contestant) (error) {
+	contestantMap.Store(c.ID, c)
+	return nil
+}
+
+
+var finishedLeaderboard *resourcespb.Leaderboard
 func makeLeaderboardPB(e echo.Context, teamID int64) (*resourcespb.Leaderboard, error) {
-	contestStatus, err := getCurrentContestStatus(e, db)
+	if finishedLeaderboard != nil {
+		return finishedLeaderboard, nil
+	}
+
+	contestStatus, err := getCurrentContestStatus(e)
 	if err != nil {
 		return nil, fmt.Errorf("get current contest status: %w", err)
 	}
@@ -1367,99 +1664,94 @@ func makeLeaderboardPB(e echo.Context, teamID int64) (*resourcespb.Leaderboard, 
 	}
 	defer tx.Rollback()
 	var leaderboard []xsuportal.LeaderBoardTeam
-	query := "SELECT\n" +
-		"  `teams`.`id` AS `id`,\n" +
-		"  `teams`.`name` AS `name`,\n" +
-		"  `teams`.`leader_id` AS `leader_id`,\n" +
-		"  `teams`.`withdrawn` AS `withdrawn`,\n" +
-		"  `team_student_flags`.`student` AS `student`,\n" +
-		"  (`best_score_jobs`.`score_raw` - `best_score_jobs`.`score_deduction`) AS `best_score`,\n" +
-		"  `best_score_jobs`.`started_at` AS `best_score_started_at`,\n" +
-		"  `best_score_jobs`.`finished_at` AS `best_score_marked_at`,\n" +
-		"  (`latest_score_jobs`.`score_raw` - `latest_score_jobs`.`score_deduction`) AS `latest_score`,\n" +
-		"  `latest_score_jobs`.`started_at` AS `latest_score_started_at`,\n" +
-		"  `latest_score_jobs`.`finished_at` AS `latest_score_marked_at`,\n" +
-		"  `latest_score_job_ids`.`finish_count` AS `finish_count`\n" +
-		"FROM\n" +
-		"  `teams`\n" +
-		"  -- latest scores\n" +
-		"  LEFT JOIN (\n" +
-		"    SELECT\n" +
-		"      MAX(`id`) AS `id`,\n" +
-		"      `team_id`,\n" +
-		"      COUNT(*) AS `finish_count`\n" +
-		"    FROM\n" +
-		"      `benchmark_jobs`\n" +
-		"    WHERE\n" +
-		"      `finished_at` IS NOT NULL\n" +
-		"      -- score freeze\n" +
-		"      AND (`team_id` = ? OR (`team_id` != ? AND (? = TRUE OR `finished_at` < ?)))\n" +
-		"    GROUP BY\n" +
-		"      `team_id`\n" +
-		"  ) `latest_score_job_ids` ON `latest_score_job_ids`.`team_id` = `teams`.`id`\n" +
-		"  LEFT JOIN `benchmark_jobs` `latest_score_jobs` ON `latest_score_job_ids`.`id` = `latest_score_jobs`.`id`\n" +
-		"  -- best scores\n" +
-		"  LEFT JOIN (\n" +
-		"    SELECT\n" +
-		"      MAX(`j`.`id`) AS `id`,\n" +
-		"      `j`.`team_id` AS `team_id`\n" +
-		"    FROM\n" +
-		"      (\n" +
-		"        SELECT\n" +
-		"          `team_id`,\n" +
-		"          MAX(`score_raw` - `score_deduction`) AS `score`\n" +
-		"        FROM\n" +
-		"          `benchmark_jobs`\n" +
-		"        WHERE\n" +
-		"          `finished_at` IS NOT NULL\n" +
-		"          -- score freeze\n" +
-		"          AND (`team_id` = ? OR (`team_id` != ? AND (? = TRUE OR `finished_at` < ?)))\n" +
-		"        GROUP BY\n" +
-		"          `team_id`\n" +
-		"      ) `best_scores`\n" +
-		"      LEFT JOIN `benchmark_jobs` `j` ON (`j`.`score_raw` - `j`.`score_deduction`) = `best_scores`.`score`\n" +
-		"        AND `j`.`team_id` = `best_scores`.`team_id`\n" +
-		"    GROUP BY\n" +
-		"      `j`.`team_id`\n" +
-		"  ) `best_score_job_ids` ON `best_score_job_ids`.`team_id` = `teams`.`id`\n" +
-		"  LEFT JOIN `benchmark_jobs` `best_score_jobs` ON `best_score_jobs`.`id` = `best_score_job_ids`.`id`\n" +
-		"  -- check student teams\n" +
-		"  LEFT JOIN (\n" +
-		"    SELECT\n" +
-		"      `team_id`,\n" +
-		"      (SUM(`student`) = COUNT(*)) AS `student`\n" +
-		"    FROM\n" +
-		"      `contestants`\n" +
-		"    GROUP BY\n" +
-		"      `contestants`.`team_id`\n" +
-		"  ) `team_student_flags` ON `team_student_flags`.`team_id` = `teams`.`id`\n" +
-		"ORDER BY\n" +
-		"  `latest_score` DESC,\n" +
-		"  `latest_score_marked_at` ASC\n"
-	err = tx.Select(&leaderboard, query, teamID, teamID, contestFinished, contestFreezesAt, teamID, teamID, contestFinished, contestFreezesAt)
-	if err != sql.ErrNoRows && err != nil {
-		return nil, fmt.Errorf("select leaderboard: %w", err)
+	if contestFinished {
+		query := "SELECT\n" +
+			"  `teams`.`id` AS `id`,\n" +
+			"  `teams`.`name` AS `name`,\n" +
+			"  `teams`.`leader_id` AS `leader_id`,\n" +
+			"  `teams`.`withdrawn` AS `withdrawn`,\n" +
+			"  `student`,\n" +
+			"  best_score AS `best_score`,\n" +
+			"  best_score_started_at AS `best_score_started_at`,\n" +
+			"  best_score_marked_at AS `best_score_marked_at`,\n" +
+			"  latest_score AS `latest_score`,\n" +
+			"  latest_score_started_at AS `latest_score_started_at`,\n" +
+			"  latest_score_marked_at AS `latest_score_marked_at`,\n" +
+			"  finish_count AS `finish_count`\n" +
+			"FROM\n" +
+			"  `teams`\n" +
+			"  JOIN scores ON teams.id = scores.team_id\n" +
+			"ORDER BY\n" +
+			"  `latest_score` DESC,\n" +
+			"  `latest_score_marked_at` ASC\n"
+		err := tx.Select(&leaderboard, query)
+		if err != sql.ErrNoRows && err != nil {
+			return nil, fmt.Errorf("select leaderboard: %w", err)
+		}
+	} else {
+		query := "SELECT\n" +
+			"  `teams`.`id` AS `id`,\n" +
+			"  `teams`.`name` AS `name`,\n" +
+			"  `teams`.`leader_id` AS `leader_id`,\n" +
+			"  `teams`.`withdrawn` AS `withdrawn`,\n" +
+			"  `student`,\n" +
+			"  CASE WHEN team_id = ? THEN best_score ELSE freeze_best_score END AS `best_score`,\n" +
+			"  CASE WHEN team_id = ? THEN best_score_started_at ELSE freeze_best_score_started_at END AS `best_score_started_at`,\n" +
+			"  CASE WHEN team_id = ? THEN best_score_marked_at ELSE freeze_best_score_marked_at END AS `best_score_marked_at`,\n" +
+			"  CASE WHEN team_id = ? THEN latest_score ELSE freeze_latest_score END AS `latest_score`,\n" +
+			"  CASE WHEN team_id = ? THEN latest_score_started_at ELSE freeze_latest_score_started_at END AS `latest_score_started_at`,\n" +
+			"  CASE WHEN team_id = ? THEN latest_score_marked_at ELSE freeze_latest_score_marked_at END AS `latest_score_marked_at`,\n" +
+			"  CASE WHEN team_id = ? THEN finish_count ELSE freeze_finish_count END AS `finish_count`\n" +
+			"FROM\n" +
+			"  `teams`\n" +
+			"  JOIN scores ON teams.id = scores.team_id\n" +
+			"ORDER BY\n" +
+			"  `latest_score` DESC,\n" +
+			"  `latest_score_marked_at` ASC\n"
+		err := tx.Select(&leaderboard, query, teamID, teamID, teamID, teamID, teamID, teamID, teamID)
+		if err != sql.ErrNoRows && err != nil {
+			return nil, fmt.Errorf("select leaderboard: %w", err)
+		}
 	}
-	jobResultsQuery := "SELECT\n" +
-		"  `team_id` AS `team_id`,\n" +
-		"  (`score_raw` - `score_deduction`) AS `score`,\n" +
-		"  `started_at` AS `started_at`,\n" +
-		"  `finished_at` AS `finished_at`\n" +
-		"FROM\n" +
-		"  `benchmark_jobs`\n" +
-		"WHERE\n" +
-		"  `started_at` IS NOT NULL\n" +
-		"  AND (\n" +
-		"    `finished_at` IS NOT NULL\n" +
-		"    -- score freeze\n" +
-		"    AND (`team_id` = ? OR (`team_id` != ? AND (? = TRUE OR `finished_at` < ?)))\n" +
-		"  )\n" +
-		"ORDER BY\n" +
-		"  `finished_at`"
 	var jobResults []xsuportal.JobResult
-	err = tx.Select(&jobResults, jobResultsQuery, teamID, teamID, contestFinished, contestFreezesAt)
-	if err != sql.ErrNoRows && err != nil {
-		return nil, fmt.Errorf("select job results: %w", err)
+	if contestFinished {
+		jobResultsQuery := "SELECT\n" +
+			"  `team_id` AS `team_id`,\n" +
+			"  (`score_raw` - `score_deduction`) AS `score`,\n" +
+			"  `started_at` AS `started_at`,\n" +
+			"  `finished_at` AS `finished_at`\n" +
+			"FROM\n" +
+			"  `benchmark_jobs`\n" +
+			"WHERE\n" +
+			"  `started_at` IS NOT NULL\n" +
+			"  AND `finished_at` IS NOT NULL\n" +
+			"ORDER BY\n" +
+			"  `finished_at`"
+		err := tx.Select(&jobResults, jobResultsQuery)
+		if err != sql.ErrNoRows && err != nil {
+			return nil, fmt.Errorf("select job results: %w", err)
+		}
+	} else {
+		jobResultsQuery := "SELECT\n" +
+			"  `team_id` AS `team_id`,\n" +
+			"  (`score_raw` - `score_deduction`) AS `score`,\n" +
+			"  `started_at` AS `started_at`,\n" +
+			"  `finished_at` AS `finished_at`\n" +
+			"FROM\n" +
+			"  `benchmark_jobs`\n" +
+			"WHERE\n" +
+			"  `started_at` IS NOT NULL\n" +
+			"  AND (\n" +
+			"    `finished_at` IS NOT NULL\n" +
+			"    -- score freeze\n" +
+			"    AND (`team_id` = ? OR (`team_id` != ? AND `finished_at` < ?))\n" +
+			"  )\n" +
+			"ORDER BY\n" +
+			"  `finished_at`"
+		err := tx.Select(&jobResults, jobResultsQuery, teamID, teamID, contestFreezesAt)
+		if err != sql.ErrNoRows && err != nil {
+			return nil, fmt.Errorf("select job results: %w", err)
+		}
 	}
 	if err := tx.Commit(); err != nil {
 		return nil, fmt.Errorf("commit tx: %w", err)
@@ -1496,6 +1788,9 @@ func makeLeaderboardPB(e echo.Context, teamID int64) (*resourcespb.Leaderboard, 
 			pb.GeneralTeams = append(pb.GeneralTeams, item)
 		}
 		pb.Teams = append(pb.Teams, item)
+	}
+	if contestFinished {
+		finishedLeaderboard = pb
 	}
 	return pb, nil
 }
@@ -1536,8 +1831,8 @@ func makeBenchmarkResultPB(job *xsuportal.BenchmarkJob) *resourcespb.BenchmarkRe
 	return pb
 }
 
-func makeBenchmarkJobsPB(e echo.Context, db sqlx.Queryer, limit int) ([]*resourcespb.BenchmarkJob, error) {
-	team, _ := getCurrentTeam(e, db, false)
+func makeBenchmarkJobsPB(e echo.Context, db sqlx.Queryer, team *xsuportal.Team, limit int) ([]*resourcespb.BenchmarkJob, error) {
+	// team, _ := getCurrentTeam(e, db, false, nil)
 	query := "SELECT * FROM `benchmark_jobs` WHERE `team_id` = ? ORDER BY `created_at` DESC"
 	if limit > 0 {
 		query += fmt.Sprintf(" LIMIT %d", limit)

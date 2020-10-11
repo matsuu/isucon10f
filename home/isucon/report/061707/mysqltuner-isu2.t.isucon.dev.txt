@@ -1,0 +1,121 @@
+ >>  MySQLTuner 1.7.19 - Major Hayden <major@mhtx.net>
+ >>  Bug reports, feature requests, and downloads at http://mysqltuner.com/
+ >>  Run with '--help' for additional options and output filtering
+
+[--] Skipped version check for MySQLTuner script
+[OK] Logged in using credentials from Debian maintenance account.
+[OK] Currently running supported MySQL version 8.0.21-0ubuntu0.20.04.4
+[OK] Operating on 64-bit architecture
+ 
+-------- Log file Recommendations ------------------------------------------------------------------
+[OK] Log file /var/log/mysql/error.log exists
+[--] Log file: /var/log/mysql/error.log(0B)
+[OK] Log file /var/log/mysql/error.log is readable.
+[!!] Log file /var/log/mysql/error.log is empty
+[OK] Log file /var/log/mysql/error.log is smaller than 32 Mb
+[OK] /var/log/mysql/error.log doesn't contain any warning.
+[OK] /var/log/mysql/error.log doesn't contain any error.
+[--] 0 start(s) detected in /var/log/mysql/error.log
+[--] 0 shutdown(s) detected in /var/log/mysql/error.log
+ 
+-------- Storage Engine Statistics -----------------------------------------------------------------
+[--] Status: +ARCHIVE +BLACKHOLE +CSV -FEDERATED +InnoDB +MEMORY +MRG_MYISAM +MyISAM +PERFORMANCE_SCHEMA 
+[--] Data in InnoDB tables: 2.5M (Tables: 9)
+[OK] Total fragmented tables: 0
+ 
+-------- Analysis Performance Metrics --------------------------------------------------------------
+[--] innodb_stats_on_metadata: OFF
+[OK] No stat updates during querying INFORMATION_SCHEMA.
+ 
+-------- Security Recommendations ------------------------------------------------------------------
+[--] Skipped due to unsupported feature for MySQL 8
+ 
+-------- CVE Security Recommendations --------------------------------------------------------------
+[--] Skipped due to --cvefile option undefined
+ 
+-------- Performance Metrics -----------------------------------------------------------------------
+[--] Up for: 16h 48m 23s (186K q [3.084 qps], 1K conn, TX: 1G, RX: 30M)
+[--] Reads / Writes: 77% / 23%
+[--] Binary logging is disabled
+[--] Physical Memory     : 2.0G
+[--] Max MySQL memory    : 63.9G
+[--] Other process memory: 0B
+[--] Total buffers: 168.0M global + 65.1M per thread (1002 max threads)
+[--] P_S Max memory usage: 0B
+[--] Galera GCache Max memory usage: 0B
+[!!] Maximum reached memory usage: 42.8G (2193.61% of installed RAM)
+[!!] Maximum possible memory usage: 63.9G (3276.43% of installed RAM)
+[!!] Overall possible memory usage with other process exceeded memory
+[!!] Slow queries: 100% (186K/186K)
+[OK] Highest usage of available connections: 66% (670/1002)
+[OK] Aborted connections: 0.00%  (0/1168)
+[!!] name resolution is active : a reverse name resolution is made for each new connection and can reduce performance
+[--] Query cache have been removed in MySQL 8
+[OK] Sorts requiring temporary tables: 0% (0 temp sorts / 25K sorts)
+[OK] No joins without indexes
+[OK] Temporary tables created on disk: 0% (0 on disk / 4 total)
+[!!] Thread cache hit rate: 42% (670 created / 1K connections)
+[OK] Table cache hit rate: 48% (857 open / 1K opened)
+[OK] table_definition_cache(2000) is upper than number of tables(325)
+[OK] Open file limit used: 0% (1/65K)
+[OK] Table locks acquired immediately: 100% (4 immediate / 4 locks)
+ 
+-------- Performance schema ------------------------------------------------------------------------
+[--] Performance schema is disabled.
+[--] Memory used by P_S: 0B
+[--] Sys schema is installed.
+ 
+-------- ThreadPool Metrics ------------------------------------------------------------------------
+[--] ThreadPool stat is disabled.
+ 
+-------- MyISAM Metrics ----------------------------------------------------------------------------
+[--] MyISAM Metrics are disabled on last MySQL versions.
+ 
+-------- InnoDB Metrics ----------------------------------------------------------------------------
+[--] InnoDB is enabled.
+[--] InnoDB Thread Concurrency: 0
+[OK] InnoDB File per table is activated
+[OK] InnoDB buffer pool / data size: 128.0M/2.5M
+[!!] Ratio InnoDB log file size / InnoDB Buffer pool size (75 %): 48.0M * 2/128.0M should be equal to 25%
+[OK] InnoDB buffer pool instances: 1
+[--] Number of InnoDB Buffer Pool Chunk : 1 for 1 Buffer Pool Instance(s)
+[OK] Innodb_buffer_pool_size aligned with Innodb_buffer_pool_chunk_size & Innodb_buffer_pool_instances
+[OK] InnoDB Read buffer efficiency: 99.98% (6146247 hits/ 6147367 total)
+[!!] InnoDB Write Log efficiency: 0% (0 hits/ 0 total)
+[OK] InnoDB log waits: 0% (0 waits / 0 writes)
+ 
+-------- AriaDB Metrics ----------------------------------------------------------------------------
+[--] AriaDB is disabled.
+ 
+-------- TokuDB Metrics ----------------------------------------------------------------------------
+[--] TokuDB is disabled.
+ 
+-------- XtraDB Metrics ----------------------------------------------------------------------------
+[--] XtraDB is disabled.
+ 
+-------- Galera Metrics ----------------------------------------------------------------------------
+[--] Galera is disabled.
+ 
+-------- Replication Metrics -----------------------------------------------------------------------
+[--] Galera Synchronous replication: NO
+[--] No replication slave(s) for this server.
+[--] Binlog format: ROW
+[--] XA support enabled: ON
+[--] Semi synchronous replication Master: Not Activated
+[--] Semi synchronous replication Slave: Not Activated
+[--] This is a standalone server
+ 
+-------- Recommendations ---------------------------------------------------------------------------
+General recommendations:
+    MySQL was started within the last 24 hours - recommendations may be inaccurate
+    Reduce your overall MySQL memory footprint for system stability
+    Dedicate this server to your database for highest performance.
+    Configure your accounts with ip or subnets only, then update your configuration with skip-name-resolve=1
+    Performance schema should be activated for better diagnostics
+    Before changing innodb_log_file_size and/or innodb_log_files_in_group read this: https://bit.ly/2TcGgtU
+Variables to adjust:
+  *** MySQL's maximum memory usage is dangerously high ***
+  *** Add RAM before increasing MySQL buffer variables ***
+    thread_cache_size (> 1002)
+    performance_schema = ON enable PFS
+    innodb_log_file_size should be (=16M) if possible, so InnoDB total log files size equals to 25% of buffer pool size.
